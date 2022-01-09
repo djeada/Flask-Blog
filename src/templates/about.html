@@ -1,6 +1,73 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1>About Us</h1>
-  <p>We are a group of technical bloggers and developers who are passionate about web development and programming. The authors are mostly from the University of Waterloo and are currently working on their final year project. Let us know if you have any questions or comments.</p>
+<div class="main-content">
+  
+  <div class="left-column">
+    <h1>About Us</h1>
+  <p id="about-page-main">We are a group of technical bloggers and developers who are passionate 
+    about web development and programming. The authors are mostly from the 
+    University of Waterloo and are currently working on their final year project. 
+    Let us know if you have any questions or comments.</p>
+
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(event, 'Mission')">Our Mission</button>
+      <button class="tablinks" onclick="openTab(event, 'Vision')">Our Vision</button>
+      <button class="tablinks" onclick="openTab(event, 'Values')">Our Values</button>
+    </div>
+    
+    <div id="Mission" class="tabcontent">
+      <h3>Our Mission</h3>
+      <p>Our mission is to provide our readers with the best content and 
+        resources to help them learn and grow in their career. We aim to 
+        provide the best experience for our readers and help them to 
+        understand the world around them. We aim to provide the best experience 
+        for our readers and help them to understand the world around them. We aim 
+        to provide the best experience for our readers and help them to understand 
+        the world around them.</p>
+    </div>
+    
+    <div id="Vision" class="tabcontent">
+      <h3>Our Vision</h3>
+      <p>We envision a just world where everyone gets to read articles they deserve. 
+        We aim to provide the best experience for our readers and help them to 
+        understand the world around them. We aim to provide the best experience 
+        for our readers and help them to understand the world around them. We aim 
+        to provide the best experience for our readers and help them to understand 
+        the world around them.</p>
+    </div>
+    
+    <div id="Values" class="tabcontent">
+      <h3>Our Values</h3>
+      <p>We value truth above all else and strive to provide the best experience 
+        for our readers and help them to understand the world around them. We aim 
+        to provide the best experience for our readers and help them to understand 
+        the world around them. We aim to provide the best experience for our readers 
+        and help them to understand the world around them. We aim to provide the best 
+        experience for our readers and help them to understand the world around them.</p>
+    </div>
+    
+    <script>
+    function openTab(evt, cityName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(cityName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+    </script>
+
+  </div>
+  <div class="right-column">
+
+    <img src="https://via.placeholder.com/700x700" alt="">
+
+  </div>
+</div>   
 {% endblock %}

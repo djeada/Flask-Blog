@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import Blueprint, render_template
 
 def construct_articles_page(database):
@@ -17,16 +18,20 @@ def construct_articles_page(database):
         :return: The rendered articles page.
         """
 
-        with database.connection.cursor() as cursor:
+        try:
 
-            result = cursor.execute("SELECT * FROM articles")
+            with database.connection.cursor() as cursor:
 
-            retrieved_articles = cursor.fetchall()
+                result = cursor.execute("SELECT * FROM articles")
 
-            if result <= 0:
-                return render_template('articles.html', msg='No Articles Found')
+                retrieved_articles = cursor.fetchall()
 
-            return render_template('articles.html', articles=retrieved_articles)
+                if result <= 0:
+                    return render_template('articles.html', msg='No Articles Found')
 
+                return render_template('articles.html', articles=retrieved_articles)
+
+        except MySQLdb._exceptions.OperationalError:
+            return render_template('articles.html', variable='No Articles Found')
 
     return articles_page

@@ -1,10 +1,65 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1>Articles</h1>
-  <ul class="list-group">
-    {% for article in articles %}
-      <li class="list-group-item"><a href="article/{{article.id}}">{{article.title}}</a></li>
-    {% endfor %}
-  </ul>
+
+{% if variable is defined %}
+    value of variable: {{ variable }}
+{% else %}
+    variable is not defined
+{% endif %}
+
+<div class="articles-timeline">
+  <div class="vtimeline-point">
+      <div class="vtimeline-block">
+          <span class="vtimeline-date">3 Jan 2022</span>
+          <div class="vtimeline-content">
+              <a href="#">
+                  <h3>Standard post title</h3>
+              </a>
+              <img src="https://via.placeholder.com/700x400" alt="">
+              <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
+              </p><br>
+              <div class="button-container">
+                  <button type="button">Read More</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="vtimeline-point">
+      <div class="vtimeline-block">
+          <span class="vtimeline-date">25 dec 2021</span>
+          <div class="vtimeline-content">
+              <a href="#">
+                  <h3>Standard post title</h3>
+              </a>
+              </a>
+              <img src="https://via.placeholder.com/700x400" alt="">
+              <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
+              </p><br>
+              <div class="button-container">
+                  <button type="button">Read More</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="vtimeline-point">
+      <div class="vtimeline-block">
+          <span class="vtimeline-date">17 dec 2021</span>
+          <div class="vtimeline-content">
+              <a href="#">
+                  <h3>Standard post title</h3>
+              </a>
+              <img src="https://via.placeholder.com/700x400" alt="">
+              <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
+              </p><br>
+              <div class="button-container">
+                  <button type="button">Read More</button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
 {% endblock %}
