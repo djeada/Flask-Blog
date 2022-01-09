@@ -154,7 +154,6 @@ body {
 	flex: 30%;
 }
 
-
 /*Section: Articles timeline*/
 
 .articles-timeline {
@@ -253,6 +252,145 @@ body {
 	top: 10px;
 }
 
+/*Section: Article List*/
+
+.article-list-container {
+	display: flex;
+	flex-direction: column;
+	margin: 0 auto;
+	padding: 0;
+	width: 100%;
+	max-width: 1200px;
+}
+
+/* Apply style to .article-list-element and it's children: .article-list-image, .article-list-text
+	Make sure that they are displayed in a row 
+	and they have fixed height and the image scales to the height of the container 
+	and never overflow the container */
+
+.article-list-element {
+	display: flex;
+	flex-direction: row;
+	margin: 0 auto;
+	padding: 0;
+	width: 100%;
+	height: 10rem;
+	overflow: hidden;
+}
+
+.article-list-image {
+	width: 30%;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+}
+
+.article-list-image img {
+    width: 100%;
+    object-fit: contain;
+}
+
+.article-list-text {
+	display: flex;
+	justify-content: center;
+}
+
+/*Section: Forms*/
+
+/* Apply nice style to the form */
+
+.form-group {
+	margin-bottom: 1rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: .5rem;
+}
+
+.form-group input,
+.form-group textarea {
+	width: 100%;
+	border: 1px solid #e6e6e6;
+	border-radius: .25rem;
+	padding: .5rem;
+	font-size: 1rem;
+	line-height: 1.5;
+	box-sizing: border-box;
+	transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+	outline: 0;
+	border-color: #252525;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(37, 41, 45, .6);
+}
+
+.form-group input[type="submit"] {
+	background-color: #282A35;
+	;
+	border: 1px solid #282A35;
+	;
+	border-radius: 4px;
+	box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+	box-sizing: border-box;
+	color: #fff;
+	cursor: pointer;
+	font-size: 1em;
+	outline: none;
+	outline: 0;
+	padding: 10px 25px;
+	text-align: center;
+	transform: translateY(0);
+	transition: transform 150ms, box-shadow 150ms;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+}
+
+.form-group input[type="submit"]:hover {
+	transform: translateY(-2px);
+	box-shadow: rgba(0, 0, 0, .3) 0 2px 4px 0;
+}
+
+.form-group input[type="submit"]:focus {
+	outline: 0;
+	border-color: #252525;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(37, 41, 45, .6);
+}
+
+
+
+/*Section: Tags*/
+
+.tags-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: left;
+}
+
+.tag {
+	background-color: #282A35;
+	border-radius: 4px;
+	color: #fff;
+	display: inline-block;
+	font-size: 0.8em;
+	font-weight: 600;
+	margin-right: 0.5em;
+	margin-bottom: 0.5em;
+	padding: 0.5em 1em;
+	text-decoration: none;
+	transition: background-color 150ms, color 150ms;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+}
+
+.tag:hover {
+	background-color: #fff;
+	color: #282A35;
+}
 
 /*Section: About*/
 
