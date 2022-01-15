@@ -15,6 +15,7 @@ A simple blog written with Flask framework.
 
 ## TODO
 
+- [ ] Add exception handling to all python files that are interacting with the DB.
 - [ ] Introduce variables to CSS
 - [ ] Test on different devices
 - [ ] Make full project specification
