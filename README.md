@@ -1,11 +1,6 @@
 # Flask-Blog
 A simple blog written with Flask framework.
 
-MAKE FULL PROJECT SPECIFICATION (SIMILAR IN TOP)
-
-Other blog templates I like:
-https://colorlib.com/wp/cat/blog/
-
 ## Installation
  
     $ git clone https://github.com/djeada/Minimal-Flask-App.git
@@ -22,3 +17,4 @@ https://colorlib.com/wp/cat/blog/
 
 - [ ] Introduce variables to CSS
 - [ ] Test on different devices
+- [ ] Make full project specification
