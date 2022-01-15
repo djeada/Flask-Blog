@@ -12,7 +12,7 @@ https://colorlib.com/wp/cat/blog/
     $ cd Minimal-Flask-App
     $ python3 -m venv myenv
     $ source myenv/bin/activate
-    $ python3 src/main.py
+    $ python3 src/app.py
 
 
 <h1>How to use?</h1>
