@@ -6,7 +6,7 @@ MAKE FULL PROJECT SPECIFICATION (SIMILAR IN TOP)
 Other blog templates I like:
 https://colorlib.com/wp/cat/blog/
 
-<h1>Installation</h1>
+## Installation
  
     $ git clone https://github.com/djeada/Minimal-Flask-App.git
     $ cd Minimal-Flask-App
@@ -15,4 +15,10 @@ https://colorlib.com/wp/cat/blog/
     $ python3 src/app.py
 
 
-<h1>How to use?</h1>
+## How to use?
+
+
+## TODO
+
+- [ ] Introduce variables to CSS
+- [ ] Test on different devices
