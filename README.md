@@ -20,3 +20,5 @@ A simple blog written with Flask framework.
 - [ ] Test on different devices.
 - [ ] Make full project specification.
 - [ ] Enable storing of images in the database.
+- [ ] Add tags to the database.
+
