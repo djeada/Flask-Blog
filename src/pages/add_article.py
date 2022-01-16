@@ -1,10 +1,10 @@
 import MySQLdb
 from flask import flash, redirect, url_for, Blueprint, render_template, session, request
 from misc.common import is_logged_in, ArticleForm
-import datetime
+from flask_mysqldb import MySQL
 
 
-def construct_add_article_page(database):
+def construct_add_article_page(database: MySQL) -> Blueprint:
     """
     Constructs the add article page. This page is only accessible to logged in users.
     If the user is not logged in, the user is redirected to the login page.
@@ -15,7 +15,7 @@ def construct_add_article_page(database):
 
     @add_article_page.route('/add_article', methods=['GET', 'POST'])
     @is_logged_in
-    def add_article():
+    def add_article() -> str:
         """
         Renders the add article page.
         :return: The rendered add article page.

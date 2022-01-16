@@ -1,9 +1,10 @@
 import MySQLdb
 from flask import flash, redirect, url_for, Blueprint
 from misc.common import is_logged_in
+from flask_mysqldb import MySQL
 
 
-def construct_delete_article_page(database):
+def construct_delete_article_page(database: MySQL) -> Blueprint:
     """
     Constructs the delete article page. This page is only accessible to the admin.
     :param database:
@@ -13,7 +14,7 @@ def construct_delete_article_page(database):
 
     @delete_page.route('/delete_article/<string:id>', methods=['POST'])
     @is_logged_in
-    def delete_article(id):
+    def delete_article(id: str) -> str:
         """
         Remove the article specified by the id from the database.
         Render the delete_article page.

@@ -1,9 +1,10 @@
 import MySQLdb
 from flask import flash, redirect, url_for, Blueprint, request, render_template
 from misc.common import is_logged_in, ArticleForm
+from flask_mysqldb import MySQL
 
 
-def construct_edit_article_page(database):
+def construct_edit_article_page(database: MySQL) -> Blueprint:
     """
     Wrapper function for constructing the edit article page. This way we can 
     pass the database object to the blueprint.
@@ -14,7 +15,7 @@ def construct_edit_article_page(database):
 
     @edit_article_page.route('/edit_article/<string:id>', methods=['GET', 'POST'])
     @is_logged_in
-    def edit_article(id):
+    def edit_article(id: str) -> str:
         """
         Constructs the edit article page. If the user is not logged in, redirects to the login page.
         If the user is logged in, the page is rendered.

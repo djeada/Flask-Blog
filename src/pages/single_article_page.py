@@ -1,8 +1,9 @@
 import MySQLdb
 from flask import Blueprint, render_template
+from flask_mysqldb import MySQL
 
 
-def construct_article_page(database):
+def construct_article_page(database: MySQL) -> Blueprint:
     """
     Constructs the single article page.
     :param database: The database object.
@@ -11,7 +12,7 @@ def construct_article_page(database):
     article_page = Blueprint('/article/<string:id>/', __name__)
 
     @article_page.route('/article/<string:id>/')
-    def article(id):
+    def article(id: str) -> str:
         """
         Renders the article page.
         :param id: The article id in the database.

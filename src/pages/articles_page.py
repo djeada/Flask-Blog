@@ -1,7 +1,8 @@
 import MySQLdb
 from flask import Blueprint, render_template
+from flask_mysqldb import MySQL
 
-def construct_articles_page(database):
+def construct_articles_page(database: MySQL) -> Blueprint:
     """
     Constructs the articles page. This page is accessible from the main page and
     does not require authentication.
@@ -12,7 +13,7 @@ def construct_articles_page(database):
     articles_page = Blueprint('/articles', __name__)
 
     @articles_page.route('/articles')
-    def articles():
+    def articles() -> str:
         """
         Renders the articles page.
         :return: The rendered articles page.

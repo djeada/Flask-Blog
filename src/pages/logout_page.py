@@ -7,7 +7,7 @@ logout_page = Blueprint('logout', __name__)
 
 @logout_page.route('/logout')
 @is_logged_in
-def logout():
+def logout() -> str:
     """
     Route to logout the user. Clears the session and redirects to the login page.
     :return: Redirect to the login page.

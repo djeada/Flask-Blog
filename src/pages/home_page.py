@@ -1,8 +1,9 @@
 import MySQLdb
 from flask import Blueprint, render_template
+from flask_mysqldb import MySQL
 
 
-def construct_home_page(database):
+def construct_home_page(database: MySQL) -> Blueprint:
     """
     Constructs the home page. This page is accessible from the main page and
     does not require authentication.
@@ -13,7 +14,7 @@ def construct_home_page(database):
     home_page = Blueprint('home', __name__)
 
     @home_page.route('/')
-    def index():
+    def index() -> str:
         """
         Render the home page template on the / route.
         :return: The rendered home page template.

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template
 
 about_page = Blueprint('about', __name__)
 @about_page.route('/about')
-def index():
+def index() -> str:
     """
     Render the about page.
     """

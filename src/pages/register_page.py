@@ -2,6 +2,7 @@ import MySQLdb
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
+from flask_mysqldb import MySQL
 
 
 class RegisterForm(Form):
@@ -18,7 +19,7 @@ class RegisterForm(Form):
     confirm = PasswordField('Confirm Password')
 
 
-def construct_register_form_page(database):
+def construct_register_form_page(database: MySQL) -> Blueprint:
     """
     Constructs the register form page. This page is used to register a new user.
     :param database: The database object.
@@ -27,7 +28,7 @@ def construct_register_form_page(database):
     register_form_page = Blueprint('/register', __name__)
 
     @register_form_page.route('/register', methods=['GET', 'POST'])
-    def register():
+    def register() -> str:
         """
         Register a register form page. Connect with the database and 
         create a new user.

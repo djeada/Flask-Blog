@@ -1,9 +1,10 @@
 import MySQLdb
 from flask import Blueprint, render_template, session
 from misc.common import is_logged_in
+from flask_mysqldb import MySQL
 
 
-def construct_dashboard_page(database):
+def construct_dashboard_page(database: MySQL) -> Blueprint:
     """
     Constructs the dashboard page. This page is only accessible to logged in users.
     If the user is not logged in, the user is redirected to the login page.
@@ -14,7 +15,7 @@ def construct_dashboard_page(database):
 
     @dashboard_page.route('/dashboard')
     @is_logged_in
-    def dashboard():
+    def dashboard() -> str:
         """
         Renders the dashboard page.
         :return: Rendered dashboard page.
