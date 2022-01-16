@@ -2,7 +2,7 @@
 A simple blog written with Flask framework.
 
 
-## Screnshots
+## Screenshots
 
 ### Home page
 
