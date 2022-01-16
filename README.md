@@ -1,6 +1,5 @@
-# Flask-Blog
-A simple blog written with Flask framework.
-
+# Responsive-Blog-Template
+A simple blog written with Flask framework and MySQL database.
 
 ## Screenshots
 
@@ -12,38 +11,62 @@ A simple blog written with Flask framework.
 
 ![dashboard_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/dashboard_screenshot.png)
 
-## Installation
- 
-### Using virtual env:
- 
-    $ git clone https://github.com/djeada/Responsive-Blog-Template.git
-    $ cd Responsive-Blog-Template
-    $ python3 -m venv env
-    $ source env/bin/activate
-    $ python3 src/app.py
 
-### Using docker:
+## Features
 
+The following features are included in this project:
+
+* user authentication
+* user registration
+* create, edit and delete articles
+* admin dashboard
+* tags
+* fully responsive, easily customizable design
+* user friendly, easy to use interface
 
 ## How to setup the database?
 
-Easiest way to locally setup a MySQL database is using docker.
+The application can't function without a MySQL database. There are multiple ways to setup the database. Easiest way to locally setup a MySQL database is using docker.
 
-```bash
-docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret_pass mysql
-docker exec -it <container-name> bash
-# after p goes the password that you used when creating the container
-mysql -u root -psecret_pass
-```
+First, you need make sure you have docker installed. If you don't, you can install it using the following command if you are on Debian-based Linux distribution:
 
-Let's call our database flask_db.
+    $ sudo apt-get update
+    $ sudo apt-get install docker.io
 
-```MySQL
-create database flask_db;
-USE flask_db;
-```
+Then, you need to create a docker container for your database:
 
-We need two tables: articles and users.
+    $ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret_pass mysql
+
+The container will be running on port 3306. The secret_pass is the password for the root user of the database. You can use any password you want.
+
+You can find the container id by running the following command:
+
+    $ docker ps
+
+To ssh into the container, you can use the following command:
+
+    $ docker exec -it <container_id> /bin/bash
+    $ mysql -u root -psecret_pass
+
+You can now create the database:
+
+    $ CREATE DATABASE flask_db;
+
+The last thing is two create expected tables. The app works with two tables:
+
+    - `articles`
+    - `users`
+
+Table articles has the following columns:
+
+    - `id`: primary key
+    - `title`: string
+    - `body`: text
+    - `author`: string
+    - `date`: datetime
+    - `image`: string
+
+Use the following command to create the table:
 
 ```MySQL
 CREATE TABLE IF NOT EXISTS articles (
@@ -55,7 +78,15 @@ CREATE TABLE IF NOT EXISTS articles (
     image VARCHAR(255) default '/static/images/default.jpg'
 );
 ```
-    
+
+Table users has the following columns:
+
+    - `id`: primary key
+    - `name`: string
+    - `email`: string
+    - `username`: string
+    - `password`: string
+
 ```MySQL
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,9 +97,39 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ```
 
+## Installation
+ 
+You can run the application without the database, but you will not be able to create or edit articles. It is recommended to first setup the database.
+
+### Using virtual env:
+ 
+    $ git clone https://github.com/djeada/Responsive-Blog-Template.git
+    $ cd Responsive-Blog-Template
+    $ python3 -m venv env
+    $ source env/bin/activate
+    $ python3 src/app.py
+
+### Using docker:
+
+    $ docker run -d -p 5000:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/Responsive-Blog-Template:/app djeada/flask-blog
 
 ## How to use?
 
+If the application is running on localhost, you can access it using the following url:
+
+    http://localhost:5000/
+
+To register a new user, you can use the following url:
+
+    http://localhost:5000/register
+
+To login, you can use the following url:
+
+    http://localhost:5000/login
+
+To create, edit or delete articles, you need to login first. Then, you can use the following url:
+
+    http://localhost:5000/dashboard
 
 ## TODO
 
@@ -78,4 +139,3 @@ CREATE TABLE IF NOT EXISTS users (
 - [ ] Make full project specification.
 - [x] Enable storing of images in the database.
 - [ ] Add tags to the database.
-
