@@ -1,9 +1,16 @@
 # Flask-Blog
 A simple blog written with Flask framework.
 
-![dashboard_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/dashboard_screenshot.png)
+
+## Screnshots
+
+### Home page
+
 ![home_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/home_screenshot.png)
 
+### Articles dashboard
+
+![dashboard_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/dashboard_screenshot.png)
 
 ## Installation
  
