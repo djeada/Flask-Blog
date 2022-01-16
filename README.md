@@ -18,8 +18,8 @@ A simple blog written with Flask framework.
  
     $ git clone https://github.com/djeada/Responsive-Blog-Template.git
     $ cd Responsive-Blog-Template
-    $ python3 -m venv myenv
-    $ source myenv/bin/activate
+    $ python3 -m venv env
+    $ source env/bin/activate
     $ python3 src/app.py
 
 ### Using docker:
