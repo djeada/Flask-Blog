@@ -48,7 +48,7 @@
     </div>
     
     <script>
-    function openTab(evt, cityName) {
+    function openTab(evt, id) {
       var i, tabcontent, tablinks;
       tabcontent = document.getElementsByClassName("tabcontent");
       for (i = 0; i < tabcontent.length; i++) {
@@ -58,15 +58,39 @@
       for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
       }
-      document.getElementById(cityName).style.display = "block";
+      document.getElementById(id).style.display = "block";
       evt.currentTarget.className += " active";
     }
     </script>
 
-  </div>
+    <h2>Contact Us</h2>
+
+    <form action="">
+      <div class="form-group">
+        <input type="text" name="name" placeholder="Name">
+      </div>
+      <div class="form-group">
+
+      <input type="text" name="email" placeholder="Email">
+    </div>
+    <div class="form-group">
+
+      <input type="text" name="subject" placeholder="Subject">
+    </div>
+    <div class="form-group">
+
+      <textarea name="message" placeholder="Message"></textarea>
+    </div>
+
+    <div class="button-container">
+      <button type="submit" class="button">Send</button>
+  </div>    </form>
+    </div>
   
   <div class="right-column">
-    <img src="https://via.placeholder.com/700x700" alt="">
+    <div class="image-container">
+      <img src="/static/images/students.jpg" alt="">
+    </div>
   </div>
 </div>   
 {% endblock %}

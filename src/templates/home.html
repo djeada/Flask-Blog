@@ -14,6 +14,28 @@
 
 <div class="main-content">
     <div class="left-column">
+        <div class="articles-timeline">
+            {% for article in articles %}
+            <div class="vtimeline-point">
+                <div class="vtimeline-block">
+                    <span class="vtimeline-date">{{ article.date.strftime('%Y-%m-%d') }}</span>
+                    <div class="vtimeline-content">
+                        <a href="article/{{article.id}}">
+                            <h3>{{ article.title }}</h3>
+                        </a>
+                        <img src="{{ article.image }}" alt="">
+                        <p>
+                            {{ article.body | safe }}
+                        </p>
+                        <br>
+                        <div onclick="location.href='article/{{article.id}}'" class="button-container">
+                            <button type="button">Read More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
     </div>
     <div class="right-column">
@@ -25,10 +47,10 @@
                 </div>
                 <div class="article-list-text">
                     <div>
-                        <h2>Cat in the Hat</h2>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
                         <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
-                        <p class="article-list-date">Published on: <span>12/12/2021</span></p>
-                    </div>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
                 </div>
             </div>
         </div>
@@ -41,10 +63,10 @@
                 </div>
                 <div class="article-list-text">
                     <div>
-                        <h2>Cat in the Hat</h2>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
                         <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
-                        <p class="article-list-date">Published on: <span>12/12/2021</span></p>
-                    </div>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
                 </div>
             </div>
             <div class="article-list-element">
@@ -53,10 +75,10 @@
                 </div>
                 <div class="article-list-text">
                     <div>
-                        <h2>Cat in the Hat</h2>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
                         <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
-                        <p class="article-list-date">Published on: <span>12/12/2021</span></p>
-                    </div>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
                 </div>
             </div>
             <div class="article-list-element">
@@ -65,10 +87,10 @@
                 </div>
                 <div class="article-list-text">
                     <div>
-                        <h2>Cat in the Hat</h2>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
                         <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
-                        <p class="article-list-date">Published on: <span>12/12/2021</span></p>
-                    </div>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
                 </div>
             </div>
         </div>

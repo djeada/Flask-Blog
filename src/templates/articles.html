@@ -1,65 +1,28 @@
-{% extends 'layout.html' %}
-
-{% block body %}
-
-{% if variable is defined %}
-    value of variable: {{ variable }}
-{% else %}
-    variable is not defined
-{% endif %}
-
-<div class="articles-timeline">
-  <div class="vtimeline-point">
-      <div class="vtimeline-block">
-          <span class="vtimeline-date">3 Jan 2022</span>
-          <div class="vtimeline-content">
-              <a href="#">
-                  <h3>Standard post title</h3>
-              </a>
-              <img src="https://via.placeholder.com/700x400" alt="">
-              <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
-              </p><br>
-              <div class="button-container">
-                  <button type="button">Read More</button>
-              </div>
-          </div>
-      </div>
-  </div>
-  <div class="vtimeline-point">
-      <div class="vtimeline-block">
-          <span class="vtimeline-date">25 dec 2021</span>
-          <div class="vtimeline-content">
-              <a href="#">
-                  <h3>Standard post title</h3>
-              </a>
-              </a>
-              <img src="https://via.placeholder.com/700x400" alt="">
-              <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
-              </p><br>
-              <div class="button-container">
-                  <button type="button">Read More</button>
-              </div>
-          </div>
-      </div>
-  </div>
-  <div class="vtimeline-point">
-      <div class="vtimeline-block">
-          <span class="vtimeline-date">17 dec 2021</span>
-          <div class="vtimeline-content">
-              <a href="#">
-                  <h3>Standard post title</h3>
-              </a>
-              <img src="https://via.placeholder.com/700x400" alt="">
-              <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
-              </p><br>
-              <div class="button-container">
-                  <button type="button">Read More</button>
-              </div>
-          </div>
-      </div>
-  </div>
+{% extends 'layout.html' %} {% block body %} {% if variable is defined %}
+<div class="form-container">
+    <h1>{{variable}}</h1>
 </div>
-{% endblock %}
+{% else %}
+<div class="articles-timeline">
+    {% for article in articles %}
+    <div class="vtimeline-point">
+        <div class="vtimeline-block">
+            <span class="vtimeline-date">{{ article.date.strftime('%Y-%m-%d') }}</span>
+            <div class="vtimeline-content">
+                <a href="article/{{article.id}}">
+                    <h3>{{ article.title }}</h3>
+                </a>
+                <img src="{{ article.image }}" alt="">
+                <p>
+                    {{ article.body | safe }}
+                </p>
+                <br>
+                <div onclick="location.href='article/{{article.id}}'" class="button-container">
+                    <button type="button">Read More</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %} {% endblock %}

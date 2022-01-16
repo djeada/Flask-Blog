@@ -1,5 +1,6 @@
 from flask import flash, redirect, url_for, Blueprint, render_template, session, request
 from misc.common import is_logged_in, ArticleForm
+import datetime
 
 
 def construct_add_article_page(database):
@@ -25,8 +26,7 @@ def construct_add_article_page(database):
             author = session['username']
 
             with database.connection.cursor() as cursor:
-                cursor.execute (f"INSERT INTO articles(title, body, author) VALUES({title!r}, {body!r}, {author!r})")
-
+                cursor.execute (f"INSERT INTO articles(title, body, author, image) VALUES({title!r}, {body!r}, {author!r}, C:/Users/Adam/Downloads/cat.jpg)")
                 database.connection.commit()
 
             flash('Article Created', 'success')

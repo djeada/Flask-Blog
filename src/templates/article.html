@@ -1,10 +1,98 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1>{{article.title}}</h1>
-  <small>Written by {{article.author}} on {{article.create_date}}</small>
-  <hr>
-  <div>
-    {{article.body | safe}}
-  </div>
+
+  <div class="main-content">
+    <div class="left-column">
+      <div class="article-container">
+        <h1>{{article.title}}</h1>
+        <small>Written by {{article.author}} on {{article.date.strftime('%Y-%m-%d')}}</small>
+        <img src="{{article.image}}" alt="">
+        <div>
+          {{article.body | safe}}
+        </div>
+      </div>
+    </div>
+    <div class="right-column">
+        <h1>Author's Picks</h1>
+        <div class="article-list-container">
+            <div class="article-list-element">
+                <div class="article-list-image">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
+                </div>
+                <div class="article-list-text">
+                    <div>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
+                        <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <h1>Popular Articles</h1>
+        <div class="article-list-container">
+            <div class="article-list-element">
+                <div class="article-list-image">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
+                </div>
+                <div class="article-list-text">
+                    <div>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
+                        <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
+                </div>
+            </div>
+            <div class="article-list-element">
+                <div class="article-list-image">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
+                </div>
+                <div class="article-list-text">
+                    <div>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
+                        <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
+                </div>
+            </div>
+            <div class="article-list-element">
+                <div class="article-list-image">
+                    <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
+                </div>
+                <div class="article-list-text">
+                    <div>
+                        <h2><a href="/article/1">Cat in the Hat</a></h2>
+                        <p>It was early in the morning when cat in the hat noticed the cat in the hat was missing...</p>
+                        <p class="article-list-date"><a href="/article/1">Published on: <span>12/12/2021</span></a></p>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <h1>Popular Tags</h1>
+        <div class="tags-container">
+            <div class="tag">Bike</div>
+            <div class="tag">Building</div>
+            <div class="tag">Camera</div>
+            <div class="tag">Craft</div>
+            <div class="tag">Gear</div>
+            <div class="tag">Girl</div>
+            <div class="tag">Jumping</div>
+            <div class="tag">Lake</div>
+            <div class="tag">Lifestyle</div>
+            <div class="tag">Master</div>
+            <div class="tag">Mock-up</div>
+            <div class="tag">Motivation</div>
+            <div class="tag">Mountains</div>
+            <div class="tag">Movie</div>
+            <div class="tag">Notebook</div>
+            <div class="tag">Office</div>
+            <div class="tag">Stormtrooper</div>
+            <div class="tag">Swimming</div>
+            <div class="tag">Trooper</div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
