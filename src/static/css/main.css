@@ -16,6 +16,19 @@ body {
 	color: #141823;
 }
 
+p {
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased !important;
+	-moz-font-smoothing: antialiased !important;
+	text-rendering: optimizelegibility !important;
+	letter-spacing: .03em;
+  }
+
+  a, a:hover, a:focus, a:active {
+	text-decoration: none;
+	color: inherit;
+}
+
 /* Section: Buttons */
 
 button {
@@ -159,7 +172,7 @@ table td {
 /*Section: Home title*/
 
 .site-title {
-	background: url(background.jpg);
+	background: url(/static/images/background.jpg);
 	background-size: cover;
 	height: 110vh;
 	justify-content: center;
@@ -196,7 +209,6 @@ table td {
 	line-height: 1.5;
 }
 
-
 /*Section: Home content*/
 
 .main-content {
@@ -218,6 +230,7 @@ table td {
 
 .articles-timeline {
 	position: relative;
+	margin-top: 5rem;
 }
 
 .articles-timeline:before {
@@ -267,6 +280,11 @@ table td {
 
 .vtimeline-content p {
 	font-size: 1em;
+}
+
+.vtimeline-content img {
+	width: 100%;
+	height: auto;
 }
 
 .vtimeline-point {
@@ -482,6 +500,18 @@ table td {
 	width: 80%;
 }
 
+.image-container {
+	width: 100%;
+	min-height: 100%;
+	max-height: auto;
+	overflow: hidden;
+}
+
+.image-container img {
+	width: 100%;
+	object-fit: contain;
+}
+
 /* Style the tab */
 
 .tab {
@@ -515,6 +545,11 @@ table td {
 	padding: 6px 12px;
 	border: 1px solid #ccc;
 	border-top: none;
+	margin-bottom: 3rem;
+}
+
+#Mission {
+	display: block;
 }
 
 /*Section: Dashboard*/
@@ -540,6 +575,62 @@ table td {
 .create-new-article-container button {
 	margin: 1rem;
 	align-self: flex-end;
+}
+
+/*Section: Article*/
+
+.article-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: top;
+	align-items: left;
+	margin: 0 auto;
+	padding: 0;
+	width: 80%;
+	min-height: 80vh;
+	position: relative;
+}
+
+.article-container h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: .05em
+}
+
+.article-container img {
+	width: 100%;
+	object-fit: contain;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+
+}
+
+/*Section: alerts*/
+
+.alert {
+	background-color: #282A35;
+	border-radius: 4px;
+	color: #fff;
+	display: inline-block;
+	font-size: 0.8em;
+	font-weight: 600;
+	margin-right: 0.5em;
+	margin-bottom: 0.5em;
+	padding: 0.5em 1em;
+	text-decoration: none;
+	transition: background-color 150ms, color 150ms;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+}
+
+.alert-success {
+	background-color: #057225;
+}
+
+.alert-danger {
+	background-color: #da1e1e;
 }
 
 /*Section: footer*/
@@ -584,7 +675,7 @@ table td {
 
 .icon-facebook {
 	color: white;
-	background-image: url('facebook.png');
+	background-image: url('/static/images/facebook.png');
 	background-color: #3b5998;
 }
 
@@ -593,7 +684,7 @@ table td {
 
 .icon-twitter {
 	color: white;
-	background-image: url('twitter.png');
+	background-image: url('/static/images/twitter.png');
 	background-color: #55acee;
 }
 
@@ -602,7 +693,7 @@ table td {
 
 .icon-instagram {
 	color: white;
-	background-image: url('instagram.png');
+	background-image: url('/static/images/instagram.png');
 	background-color: #e1306c;
 }
 
@@ -611,7 +702,7 @@ table td {
 
 .icon-youtube {
 	color: white;
-	background-image: url('youtube.png');
+	background-image: url('/static/images/youtube.png');
 	background-color: #bb0000;
 }
 
