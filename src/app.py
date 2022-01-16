@@ -1,6 +1,6 @@
 from flask_mysqldb import MySQL
 from pathlib import Path
-from pages.home_page import home_page
+from pages.home_page import construct_home_page
 from pages.about_page import about_page
 from pages.logout_page import logout_page
 from pages.login_page import construct_login_page
@@ -26,9 +26,9 @@ if __name__ == '__main__':
 
     # create all the pages
     pages = [
-        home_page,
         about_page,
         logout_page,
+        construct_home_page(database),
         construct_login_page(database),
         construct_add_article_page(database),
         construct_edit_article_page(database),
