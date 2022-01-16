@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import flash, redirect, url_for, Blueprint
 from misc.common import is_logged_in
 
@@ -20,11 +21,16 @@ def construct_delete_article_page(database):
         :return: Redirect to the delete_article page.
         """
         
-        with database.connection.cursor() as cursor:
-            cursor.execute(f"DELETE FROM articles WHERE id = {id}")
-            database.connection.commit()
+        try:
+            with database.connection.cursor() as cursor:
+                cursor.execute(f"DELETE FROM articles WHERE id = {id}")
+                database.connection.commit()
 
-        flash('Article Deleted', 'success')
+            flash('Article Deleted', 'success')
+
+        except MySQLdb._exceptions.OperationalError:
+            flash('Article deletion failed', 'failure')
+
         return redirect(url_for('/dashboard.dashboard'))
 
     return delete_page

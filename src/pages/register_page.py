@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -41,13 +42,18 @@ def construct_register_form_page(database):
             username = form.username.data
             password = sha256_crypt.encrypt(f'{form.password.data}')
             
-            with database.connection.cursor() as cursor:
-                cursor.execute(f"INSERT INTO users(name, email, username, password) VALUES('{name}', '{email}', '{username}', '{password}')")
-                database.connection.commit()
+            try:
 
-            flash('You are now registered and can log in', 'success')
+                with database.connection.cursor() as cursor:
+                    cursor.execute(f"INSERT INTO users(name, email, username, password) VALUES('{name}', '{email}', '{username}', '{password}')")
+                    database.connection.commit()
 
-            return redirect(url_for('login'))
+                flash('You are now registered and can log in', 'success')
+                return redirect(url_for('login'))
+
+            except MySQLdb._exceptions.OperationalError:
+                flash('Connection error', 'failure')
+                return redirect(url_for('login'))
 
         return render_template('register.html', form=form)
 

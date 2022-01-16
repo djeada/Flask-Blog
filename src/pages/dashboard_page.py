@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import Blueprint, render_template, session
 from misc.common import is_logged_in
 
@@ -18,16 +19,21 @@ def construct_dashboard_page(database):
         Renders the dashboard page.
         :return: Rendered dashboard page.
         """
-        with database.connection.cursor() as cursor:
+        try:
 
-            # get articles from users that are logged in
-            result = cursor.execute(f"SELECT * FROM articles WHERE author = '{session['username']}'")
+            with database.connection.cursor() as cursor:
 
-            articles = cursor.fetchall()
+                # get articles from users that are logged in
+                result = cursor.execute(f"SELECT * FROM articles WHERE author = '{session['username']}'")
 
-            if result <= 0:
-                return render_template('dashboard.html', msg='No Articles Found')
+                articles = cursor.fetchall()
 
-            return render_template('dashboard.html', articles=articles)
+                if result <= 0:
+                    return render_template('dashboard.html', msg='No Articles Found')
+
+                return render_template('dashboard.html', articles=articles)
+
+        except MySQLdb._exceptions.OperationalError:
+            return render_template('dashboard.html', msg='No Articles Found')
 
     return dashboard_page

@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import Blueprint, session, flash, redirect, url_for
 from misc.common import is_logged_in
 

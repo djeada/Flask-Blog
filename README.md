@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ## TODO
 
-- [ ] Add exception handling to all python files that are interacting with the DB.
+- [x] Add exception handling to all python files that are interacting with the DB.
 - [ ] Introduce variables to CSS.
 - [ ] Test on different devices.
 - [ ] Make full project specification.

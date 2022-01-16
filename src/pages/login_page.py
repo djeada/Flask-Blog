@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import Blueprint, render_template, flash, redirect, url_for, session, request
 from passlib.hash import sha256_crypt
 
@@ -21,6 +22,8 @@ def construct_login_page(database):
             username = request.form['username']
             password_candidate = request.form['password']
 
+        try:
+
             with database.connection.cursor() as cursor:
                 result = cursor.execute(f'SELECT * FROM users WHERE username = {username!r}')
 
@@ -35,12 +38,13 @@ def construct_login_page(database):
                         flash('You are now logged in', 'success')
                         return redirect(url_for('/dashboard.dashboard'))
                     else:
-                        error = 'Invalid login'
-                        return render_template('login.html', error=error)
+                        return render_template('login.html', error='Invalid login')
 
                 else:
-                    error = 'Username not found'
-                    return render_template('login.html', error=error)
+                    return render_template('login.html', error='Username not found')
+
+        except MySQLdb._exceptions.OperationalError:
+            return render_template('login.html', error='Connection error')
 
         return render_template('login.html')
 

@@ -21,9 +21,7 @@ def construct_articles_page(database):
         try:
 
             with database.connection.cursor() as cursor:
-
                 result = cursor.execute("SELECT * FROM articles")
-
                 retrieved_articles = cursor.fetchall()
 
                 if result <= 0:

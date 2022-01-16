@@ -1,3 +1,4 @@
+import MySQLdb
 from flask import flash, redirect, url_for, Blueprint, request, render_template
 from misc.common import is_logged_in, ArticleForm
 
@@ -20,9 +21,15 @@ def construct_edit_article_page(database):
         :param id: The article id in the database.
         :return: Rendered template.
         """
-        with database.connection.cursor() as cursor:
-            cursor.execute(f'SELECT * FROM articles WHERE id = {id}')
-            article = cursor.fetchone()
+
+        try:
+            with database.connection.cursor() as cursor:
+                cursor.execute(f'SELECT * FROM articles WHERE id = {id}')
+                article = cursor.fetchone()
+
+        except MySQLdb._exceptions.OperationalError:
+            flash("Can't display the article", 'failure')
+            return redirect(url_for('/dashboard.dashboard'))
  
         # Fill the form fields
         form = ArticleForm(request.form)
@@ -33,12 +40,17 @@ def construct_edit_article_page(database):
             title = request.form['title']
             body = request.form['body']
 
-            with database.connection.cursor() as cursor:
-                cursor.execute(f"UPDATE articles SET title = {title!r}, body = {body!r} WHERE id = {id!r}")
-                database.connection.commit()
+            try:
+                with database.connection.cursor() as cursor:
+                    cursor.execute(f"UPDATE articles SET title = {title!r}, body = {body!r} WHERE id = {id!r}")
+                    database.connection.commit()
 
-            flash('Article Updated', 'success')
-            return redirect(url_for('/dashboard.dashboard'))
+                flash('Article Updated', 'success')
+                return redirect(url_for('/dashboard.dashboard'))
+
+            except MySQLdb._exceptions.OperationalError:
+                flash("Can't update the article", 'failure')
+                return redirect(url_for('/dashboard.dashboard'))
 
         return render_template('edit_article.html', form=form)
 
