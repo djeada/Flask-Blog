@@ -110,6 +110,10 @@ You can run the application without the database, but you will not be able to cr
     $ pip install -r requirements.txt
     $ python3 src/app.py
 
+If you are using a Debian-based system and encountered toruble while installing the mysql requirements, try the following first:
+
+    $ apt install python3-dev default-libmysqlclient-dev build-essential
+
 ### Using docker:
 
     $ docker run -d -p 5000:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/Responsive-Blog-Template:/app djeada/flask-blog
