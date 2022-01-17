@@ -11,9 +11,9 @@ def construct_edit_article_page(database: MySQL) -> Blueprint:
     :param database:
     :return:
     """
-    edit_article_page = Blueprint('/edit_article/<string:id>', __name__)
+    edit_article_page = Blueprint("/edit_article/<string:id>", __name__)
 
-    @edit_article_page.route('/edit_article/<string:id>', methods=['GET', 'POST'])
+    @edit_article_page.route("/edit_article/<string:id>", methods=["GET", "POST"])
     @is_logged_in
     def edit_article(id: str) -> str:
         """
@@ -25,34 +25,36 @@ def construct_edit_article_page(database: MySQL) -> Blueprint:
 
         try:
             with database.connection.cursor() as cursor:
-                cursor.execute(f'SELECT * FROM articles WHERE id = {id}')
+                cursor.execute(f"SELECT * FROM articles WHERE id = {id}")
                 article = cursor.fetchone()
 
         except MySQLdb._exceptions.OperationalError:
-            flash("Can't display the article", 'failure')
-            return redirect(url_for('/dashboard.dashboard'))
- 
+            flash("Can't display the article", "failure")
+            return redirect(url_for("/dashboard.dashboard"))
+
         # Fill the form fields
         form = ArticleForm(request.form)
-        form.title.data = article['title']
-        form.body.data = article['body']
+        form.title.data = article["title"]
+        form.body.data = article["body"]
 
-        if request.method == 'POST' and form.validate():
-            title = request.form['title']
-            body = request.form['body']
+        if request.method == "POST" and form.validate():
+            title = request.form["title"]
+            body = request.form["body"]
 
             try:
                 with database.connection.cursor() as cursor:
-                    cursor.execute(f"UPDATE articles SET title = {title!r}, body = {body!r} WHERE id = {id!r}")
+                    cursor.execute(
+                        f"UPDATE articles SET title = {title!r}, body = {body!r} WHERE id = {id!r}"
+                    )
                     database.connection.commit()
 
-                flash('Article Updated', 'success')
-                return redirect(url_for('/dashboard.dashboard'))
+                flash("Article Updated", "success")
+                return redirect(url_for("/dashboard.dashboard"))
 
             except MySQLdb._exceptions.OperationalError:
-                flash("Can't update the article", 'failure')
-                return redirect(url_for('/dashboard.dashboard'))
+                flash("Can't update the article", "failure")
+                return redirect(url_for("/dashboard.dashboard"))
 
-        return render_template('edit_article.html', form=form)
+        return render_template("edit_article.html", form=form)
 
     return edit_article_page

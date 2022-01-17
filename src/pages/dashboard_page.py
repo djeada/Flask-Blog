@@ -11,9 +11,9 @@ def construct_dashboard_page(database: MySQL) -> Blueprint:
     :param database:
     :return:
     """
-    dashboard_page = Blueprint('/dashboard', __name__)
+    dashboard_page = Blueprint("/dashboard", __name__)
 
-    @dashboard_page.route('/dashboard')
+    @dashboard_page.route("/dashboard")
     @is_logged_in
     def dashboard() -> str:
         """
@@ -25,16 +25,18 @@ def construct_dashboard_page(database: MySQL) -> Blueprint:
             with database.connection.cursor() as cursor:
 
                 # get articles from users that are logged in
-                result = cursor.execute(f"SELECT * FROM articles WHERE author = '{session['username']}'")
+                result = cursor.execute(
+                    f"SELECT * FROM articles WHERE author = '{session['username']}'"
+                )
 
                 articles = cursor.fetchall()
 
                 if result <= 0:
-                    return render_template('dashboard.html', msg='No Articles Found')
+                    return render_template("dashboard.html", msg="No Articles Found")
 
-                return render_template('dashboard.html', articles=articles)
+                return render_template("dashboard.html", articles=articles)
 
         except MySQLdb._exceptions.OperationalError:
-            return render_template('dashboard.html', msg='No Articles Found')
+            return render_template("dashboard.html", msg="No Articles Found")
 
     return dashboard_page

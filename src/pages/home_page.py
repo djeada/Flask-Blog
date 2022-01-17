@@ -11,9 +11,9 @@ def construct_home_page(database: MySQL) -> Blueprint:
     :return: The home page blueprint.
     """
 
-    home_page = Blueprint('home', __name__)
+    home_page = Blueprint("home", __name__)
 
-    @home_page.route('/')
+    @home_page.route("/")
     def index() -> str:
         """
         Render the home page template on the / route.
@@ -28,11 +28,11 @@ def construct_home_page(database: MySQL) -> Blueprint:
                 retrieved_articles = cursor.fetchall()
 
                 if result <= 0:
-                    return render_template('home.html')
+                    return render_template("home.html")
 
-                return render_template('home.html', articles=retrieved_articles)
+                return render_template("home.html", articles=retrieved_articles)
 
         except MySQLdb._exceptions.OperationalError:
-            return render_template('home.html')
+            return render_template("home.html")
 
     return home_page

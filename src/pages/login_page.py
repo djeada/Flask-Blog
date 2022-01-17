@@ -11,42 +11,44 @@ def construct_login_page(database: MySQL) -> Blueprint:
     :param database: The database object.
     :return: The login page blueprint.
     """
-    login_page = Blueprint('/login', __name__)
+    login_page = Blueprint("/login", __name__)
 
-    @login_page.route('/login', methods=['GET', 'POST'])
+    @login_page.route("/login", methods=["GET", "POST"])
     def login() -> str:
         """
         Renders the login page.
         :return: The rendered login page.
         """
-        if request.method == 'POST':
-            username = request.form['username']
-            password_candidate = request.form['password']
+        if request.method == "POST":
+            username = request.form["username"]
+            password_candidate = request.form["password"]
 
             try:
 
                 with database.connection.cursor() as cursor:
-                    result = cursor.execute(f'SELECT * FROM users WHERE username = {username!r}')
+                    result = cursor.execute(
+                        f"SELECT * FROM users WHERE username = {username!r}"
+                    )
 
                     if result > 0:
                         data = cursor.fetchone()
-                        password = data['password']
+                        password = data["password"]
 
                         if sha256_crypt.verify(password_candidate, password):
-                            session['logged_in'] = True
-                            session['username'] = username
+                            session["logged_in"] = True
+                            session["username"] = username
 
-                            flash('You are now logged in', 'success')
-                            return redirect(url_for('/dashboard.dashboard'))
+                            flash("You are now logged in", "success")
+                            return redirect(url_for("/dashboard.dashboard"))
                         else:
-                            return render_template('login.html', error='Invalid login')
+                            return render_template("login.html", error="Invalid login")
 
                     else:
-                        return render_template('login.html', error='Username not found')
+                        return render_template("login.html", error="Username not found")
 
             except MySQLdb._exceptions.OperationalError:
-                return render_template('login.html', error='Connection error')
+                return render_template("login.html", error="Connection error")
 
-        return render_template('login.html')
+        return render_template("login.html")
 
     return login_page

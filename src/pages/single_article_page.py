@@ -9,9 +9,9 @@ def construct_article_page(database: MySQL) -> Blueprint:
     :param database: The database object.
     :return: Single article page blueprint.
     """
-    article_page = Blueprint('/article/<string:id>/', __name__)
+    article_page = Blueprint("/article/<string:id>/", __name__)
 
-    @article_page.route('/article/<string:id>/')
+    @article_page.route("/article/<string:id>/")
     def article(id: str) -> str:
         """
         Renders the article page.
@@ -25,9 +25,9 @@ def construct_article_page(database: MySQL) -> Blueprint:
                 cursor.execute(f"SELECT * FROM articles WHERE id = {id}")
                 retrieved_article = cursor.fetchone()
 
-            return render_template('article.html', article=retrieved_article)
+            return render_template("article.html", article=retrieved_article)
 
         except MySQLdb._exceptions.OperationalError:
-            return render_template('article.html', msg='Article not found')
+            return render_template("article.html", msg="Article not found")
 
     return article_page

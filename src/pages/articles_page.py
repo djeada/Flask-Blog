@@ -2,6 +2,7 @@ import MySQLdb
 from flask import Blueprint, render_template
 from flask_mysqldb import MySQL
 
+
 def construct_articles_page(database: MySQL) -> Blueprint:
     """
     Constructs the articles page. This page is accessible from the main page and
@@ -10,9 +11,9 @@ def construct_articles_page(database: MySQL) -> Blueprint:
     :return: The articles page blueprint.
     """
 
-    articles_page = Blueprint('/articles', __name__)
+    articles_page = Blueprint("/articles", __name__)
 
-    @articles_page.route('/articles')
+    @articles_page.route("/articles")
     def articles() -> str:
         """
         Renders the articles page.
@@ -26,11 +27,11 @@ def construct_articles_page(database: MySQL) -> Blueprint:
                 retrieved_articles = cursor.fetchall()
 
                 if result <= 0:
-                    return render_template('articles.html', msg='No Articles Found')
+                    return render_template("articles.html", msg="No Articles Found")
 
-                return render_template('articles.html', articles=retrieved_articles)
+                return render_template("articles.html", articles=retrieved_articles)
 
         except MySQLdb._exceptions.OperationalError:
-            return render_template('articles.html', variable='No Articles Found')
+            return render_template("articles.html", variable="No Articles Found")
 
     return articles_page

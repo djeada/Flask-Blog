@@ -10,9 +10,9 @@ def construct_delete_article_page(database: MySQL) -> Blueprint:
     :param database:
     :return:
     """
-    delete_page = Blueprint('/delete_article/<string:id>', __name__)
+    delete_page = Blueprint("/delete_article/<string:id>", __name__)
 
-    @delete_page.route('/delete_article/<string:id>', methods=['POST'])
+    @delete_page.route("/delete_article/<string:id>", methods=["POST"])
     @is_logged_in
     def delete_article(id: str) -> str:
         """
@@ -21,17 +21,17 @@ def construct_delete_article_page(database: MySQL) -> Blueprint:
         :param id: The article id in the database.
         :return: Redirect to the delete_article page.
         """
-        
+
         try:
             with database.connection.cursor() as cursor:
                 cursor.execute(f"DELETE FROM articles WHERE id = {id}")
                 database.connection.commit()
 
-            flash('Article Deleted', 'success')
+            flash("Article Deleted", "success")
 
         except MySQLdb._exceptions.OperationalError:
-            flash('Article deletion failed', 'failure')
+            flash("Article deletion failed", "failure")
 
-        return redirect(url_for('/dashboard.dashboard'))
+        return redirect(url_for("/dashboard.dashboard"))
 
     return delete_page

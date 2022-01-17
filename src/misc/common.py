@@ -19,11 +19,11 @@ def is_logged_in(f):
         :param kwargs:
         :return:
         """
-        if 'logged_in' in session:
+        if "logged_in" in session:
             return f(*args, **kwargs)
         else:
-            flash('Unauthorized, Please login', 'danger')
-            return redirect(url_for('login'))
+            flash("Unauthorized, Please login", "danger")
+            return redirect(url_for("login"))
 
     return wrap
 
@@ -32,5 +32,6 @@ class ArticleForm(Form):
     """
 
     """
-    title = StringField('Title', [validators.Length(min=1, max=200)])
-    body = TextAreaField('Body', [validators.Length(min=30)])
+
+    title = StringField("Title", [validators.Length(min=1, max=200)])
+    body = TextAreaField("Body", [validators.Length(min=30)])
