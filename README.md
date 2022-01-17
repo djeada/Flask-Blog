@@ -105,9 +105,14 @@ You can run the application without the database, but you will not be able to cr
  
     $ git clone https://github.com/djeada/Responsive-Blog-Template.git
     $ cd Responsive-Blog-Template
-    $ python3 -m venv env
+    $ virtualenv env
     $ source env/bin/activate
+    $ pip install -r requirements.txt
     $ python3 src/app.py
+
+If you are using a Debian-based system and encountered toruble while installing the mysql requirements, try the following first:
+
+    $ apt install python3-dev default-libmysqlclient-dev build-essential
 
 ### Using docker:
 
