@@ -105,6 +105,7 @@ You can run the application without the database, but you will not be able to cr
  
     $ git clone https://github.com/djeada/Responsive-Blog-Template.git
     $ cd Responsive-Blog-Template
+    $ virtualenv env
     $ source env/bin/activate
     $ pip install -r requirements.txt
     $ python3 src/app.py
