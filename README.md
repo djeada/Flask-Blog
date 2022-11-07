@@ -144,3 +144,11 @@ To create, edit or delete articles, you need to login first. Then, you can use t
 - [ ] Make full project specification.
 - [x] Enable storing of images in the database.
 - [ ] Add tags to the database.
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
