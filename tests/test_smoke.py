@@ -95,7 +95,6 @@ def test_homepage(flask_app):
         else:
             print(f"Warning: Port {port} may still be in use.")
     import socket
-    import psutil
     current_user = getpass.getuser()
     port = DEFAULT_PORT
     killed = False
