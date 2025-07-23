@@ -1,3 +1,4 @@
 - make sure that no errors or warnings are hidden in e2e tests because of subprocess launch
 - split workflow into individual scripts that can be run on their own
 - run pip freeze
+- unify env variables used across scripts, a  lot repetitions with different names

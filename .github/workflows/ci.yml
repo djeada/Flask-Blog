@@ -27,6 +27,8 @@ jobs:
       BLOG_DB_CURSOR: "DictCursor"
       MYSQL_USER: "root"
       MYSQL_PASSWORD: "root"
+      DB_USER: "root"
+      DB_PASS: "root"
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
