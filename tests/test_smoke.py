@@ -84,32 +84,12 @@ def test_homepage(flask_app):
     assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
     assert 'html' in resp.headers['Content-Type'], f"Expected 'html' in Content-Type, got {resp.headers['Content-Type']}"
     assert 'Home' in resp.text or 'Articles' in resp.text, "Expected 'Home' or 'Articles' in response body"
-    for proc in psutil.process_iter(['pid', 'username']):
-        try:
-            if proc.info['username'] == current_user:
-                for conn in proc.net_connections(kind='inet'):
-                    if conn.laddr and conn.laddr.port == port:
-                        print(f"Killing process {proc.pid} using port {port} (user: {current_user})")
-                        proc.kill()
-                        killed = True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-            print(f"Warning: Could not inspect or kill process {getattr(proc, 'pid', '?')}: {e}")
-            continue
+    killed = cleanup_port(port, current_user)
     if killed:
         print(f"Waiting for port {port} to be released...")
         for _ in range(10):
             time.sleep(0.5)
-            # Check if port is still in use
-            port_in_use = False
-            for proc in psutil.process_iter(['pid', 'username']):
-                try:
-                    if proc.info['username'] == current_user:
-                        for conn in proc.net_connections(kind='inet'):
-                            if conn.laddr and conn.laddr.port == port:
-                                port_in_use = True
-                except Exception:
-                    continue
-            if not port_in_use:
+            if not is_port_in_use(port, current_user):
                 print(f"Port {port} is now free.")
                 break
         else:
