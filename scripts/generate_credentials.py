@@ -17,8 +17,8 @@ credentials = {
     "cursor_class": os.environ.get("BLOG_DB_CURSOR", "DictCursor")
 }
 
-import os
 if args.clean:
+    removed = []
     removed = []
     for path in ["credentials.json", "src/credentials.json.example"]:
         try:
