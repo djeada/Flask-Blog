@@ -37,4 +37,6 @@ jobs:
       run: bash scripts/run_smoke_tests.sh
     - name: Clean credentials
       if: always()
-      run: python scripts/generate_credentials.py --clean --output src/credentials.json --example --output src/credentials.json.example
+      run: |
+        python scripts/generate_credentials.py --clean --output src/credentials.json
+        python scripts/generate_credentials.py --example --output src/credentials.json.example
