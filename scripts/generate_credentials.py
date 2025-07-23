@@ -12,7 +12,7 @@ args = parser.parse_args()
 credentials = {
     "host": os.environ.get("BLOG_DB_HOST", "localhost"),
     "user": os.environ.get("BLOG_DB_USER", "root"),
-    "password": os.environ.get("BLOG_DB_PASSWORD", ""),
+    "password": os.environ["BLOG_DB_PASSWORD"] if "BLOG_DB_PASSWORD" in os.environ else (lambda: (_ for _ in ()).throw(ValueError("Environment variable BLOG_DB_PASSWORD must be set for database connection.")))(),
     "database": os.environ.get("BLOG_DB_NAME", "flask_db"),
     "cursor_class": os.environ.get("BLOG_DB_CURSOR", "DictCursor")
 }
