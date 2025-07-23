@@ -97,7 +97,7 @@ def test_homepage(flask_app):
     import socket
     import psutil
     current_user = getpass.getuser()
-    port = 5000 # TODO: 
+    port = DEFAULT_PORT
     killed = False
     for proc in psutil.process_iter(['pid', 'username']):
         try:
