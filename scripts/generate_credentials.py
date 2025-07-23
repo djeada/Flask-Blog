@@ -19,7 +19,6 @@ credentials = {
 
 if args.clean:
     removed = []
-    removed = []
     for path in ["credentials.json", "src/credentials.json.example"]:
         try:
             os.remove(path)
