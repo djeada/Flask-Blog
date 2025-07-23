@@ -30,7 +30,7 @@ jobs:
     - name: Wait for MySQL
       run: bash scripts/wait_for_mysql.sh
     - name: Generate credentials
-      run: python scripts/generate_credentials.py --output src/credentials.json
+      run: python scripts/generate_credentials.py --output ${{ runner.temp }}/credentials.json
     - name: Prepare DB schema
       run: bash scripts/prepare_db_schema.sh
     - name: Run smoke tests
