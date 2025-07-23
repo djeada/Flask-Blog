@@ -87,7 +87,7 @@ class FlaskAppManager:
         ], 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE, 
-        preexec_fn=os.setsid
+        start_new_session=True
         )
         
         # Wait for the server to start with timeout
