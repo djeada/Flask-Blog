@@ -26,17 +26,15 @@ jobs:
       with:
         python-version: '3.10'
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-test.txt
+      run: bash scripts/install_dependencies.sh
     - name: Wait for MySQL
-      run: |
-        until mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; do
-          sleep 2
-        done
+      run: bash scripts/wait_for_mysql.sh
+    - name: Generate credentials
+      run: python scripts/generate_credentials.py --output src/credentials.json
     - name: Prepare DB schema
-      run: |
-        mysql -h 127.0.0.1 -uroot -proot flask_db < ./tests/schema.sql
+      run: bash scripts/prepare_db_schema.sh
     - name: Run smoke tests
-      run: pytest tests/
+      run: bash scripts/run_smoke_tests.sh
+    - name: Clean credentials
+      if: always()
+      run: python scripts/generate_credentials.py --clean --output src/credentials.json --example --output src/credentials.json.example
