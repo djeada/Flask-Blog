@@ -1,29 +1,33 @@
 {% extends 'layout.html' %} {% block body %}
 <div class="form-container">
     <h1>Register</h1>
-    {% from "includes/_formhelpers.html" import render_field %}
-    <form method="POST" action="">
+    <form method="POST" action="/auth/register">
         <div class="form-group">
-            {{render_field(form.name, class_="form-control")}}
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" required>
         </div>
         <div class="form-group">
-            {{render_field(form.email, class_="form-control")}}
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" required>
         </div>
         <div class="form-group">
-            {{render_field(form.username, class_="form-control")}}
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" required>
         </div>
         <div class="form-group">
-            {{render_field(form.password, class_="form-control")}}
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" required>
         </div>
         <div class="form-group">
-            {{render_field(form.confirm, class_="form-control")}}
+            <label>Confirm Password</label>
+            <input type="password" name="confirm_password" class="form-control" required>
         </div>
         <div class="button-container">
             <button type="submit" class="button">Register</button>
         </div>
     </form>
     <div class="form-links">
-        <a href="login">Already have an account?</a>
+        <a href="/auth/login">Already have an account?</a>
     </div>
 </div>
 {% endblock %}

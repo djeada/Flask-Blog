@@ -2,3 +2,5 @@
 - split workflow into individual scripts that can be run on their own
 - run pip freeze
 - unify env variables used across scripts, a  lot repetitions with different names
+- remove redundancy with respect to requirements.txt and .env variables (we have script for that), as well as src directory
+- it created a new script in fastapi_src/start.sh it should be moved and adjusted to the structure we use in scripts/
