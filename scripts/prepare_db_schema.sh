@@ -29,11 +29,11 @@ fi
 
 # Create database if it doesn't exist
 echo "Creating database if it doesn't exist..."
-timeout $TIMEOUT mysql -h "$DB_HOST" -P "$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" \
+timeout $TIMEOUT mysql -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP -u"$DB_USER" -p"$DB_PASSWORD" \
     -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
 # Apply schema
 echo "Applying database schema..."
-timeout $TIMEOUT mysql -h "$DB_HOST" -P "$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$SCHEMA_PATH"
+timeout $TIMEOUT mysql -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$SCHEMA_PATH"
 
 echo "Database schema preparation completed successfully!"

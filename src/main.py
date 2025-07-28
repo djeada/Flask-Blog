@@ -71,6 +71,7 @@ async def home(
         articles = await cursor.fetchall()
         await cursor.close()
     except Exception as e:
+        print(f"Database error: {e}")
         articles = []
     
     return templates.TemplateResponse(
@@ -78,7 +79,8 @@ async def home(
         {
             "request": request, 
             "articles": articles,
-            "current_user": current_user
+            "current_user": current_user,
+            "messages": []  # Empty messages list for FastAPI
         }
     )
 

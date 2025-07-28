@@ -18,17 +18,19 @@
             {% for article in articles %}
             <div class="vtimeline-point">
                 <div class="vtimeline-block">
-                    <span class="vtimeline-date">{{ article.date.strftime('%Y-%m-%d') }}</span>
+                    <span class="vtimeline-date">{{ article['created_at'].strftime('%Y-%m-%d') }}</span>
                     <div class="vtimeline-content">
-                        <a href="article/{{article.id}}">
-                            <h3>{{ article.title }}</h3>
+                        <a href="article/{{article['id']}}">
+                            <h3>{{ article['title'] }}</h3>
                         </a>
-                        <img src="{{ article.image }}" alt="">
+                        {% if article['image'] %}
+                        <img src="{{ article['image'] }}" alt="">
+                        {% endif %}
                         <p>
-                            {{ article.body | safe }}
+                            {{ article['body'] | safe }}
                         </p>
                         <br>
-                        <div onclick="location.href='article/{{article.id}}'" class="button-container">
+                        <div onclick="location.href='article/{{article['id']}}'" class="button-container">
                             <button type="button">Read More</button>
                         </div>
                     </div>

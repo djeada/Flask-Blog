@@ -13,7 +13,7 @@ REPO_ROOT="$SCRIPT_DIR/.."
 TIMEOUT=15
 START=$(date +%s)
 while true; do
-  if mysqladmin ping -h 127.0.0.1 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent; then
+  if mysqladmin ping -h 127.0.0.1 --protocol=TCP -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent; then
     break
   fi
   NOW=$(date +%s)
