@@ -225,14 +225,14 @@ class FastAPIAppManager:
             
             # Check if server is responding
             try:
-                response = requests.get(f'http://127.0.0.1:{self.port}/health', timeout=2)
+                response = requests.get(f'http://127.0.0.1:{self.port}/health', timeout=1)
                 if response.status_code == 200:
                     print(f"[INFO] FastAPI app started successfully on port {self.port}")
                     return
             except requests.exceptions.RequestException:
                 pass
             
-            time.sleep(0.5)
+            time.sleep(1)
         
         raise TimeoutError(f"FastAPI app failed to start within {STARTUP_TIMEOUT} seconds")
     
