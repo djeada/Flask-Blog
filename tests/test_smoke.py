@@ -97,7 +97,7 @@ def setup_database():
     try:
         result = subprocess.run([
             'mysqladmin', 'ping', '-h', 'localhost', '-P', '3306', 
-            '--protocol=TCP', '-u', 'root', '-psecret_pass', '--silent'
+            '--protocol=TCP', '-u', env['DB_USER'], f"-p{env['DB_PASSWORD']}", '--silent'
         ], capture_output=True, timeout=5, env=env)
         
         if result.returncode == 0:
