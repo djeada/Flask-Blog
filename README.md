@@ -1,154 +1,95 @@
-# Responsive-Blog-Template
-A simple blog written with Flask framework and MySQL database.
+# FastAPI Blog
 
-## Screenshots
+A modern, high-performance blog application built with FastAPI, featuring async operations, JWT authentication, and comprehensive API documentation.
 
-### Home page
+![Home Page](resources/home_screenshot.png)
 
-![home_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/home_screenshot.png)
+## 🚀 Quick Start
 
-### Articles dashboard
+Get up and running in minutes:
 
-![dashboard_screenshot](https://github.com/djeada/Responsive-Blog-Template/blob/main/resources/dashboard_screenshot.png)
-
-
-## Features
-
-The following features are included in this project:
-
-* user authentication
-* user registration
-* create, edit and delete articles
-* admin dashboard
-* tags
-* fully responsive, easily customizable design
-* user friendly, easy to use interface
-
-## How to setup the database?
-
-The application can't function without a MySQL database. There are multiple ways to setup the database. Easiest way to locally setup a MySQL database is using docker.
-
-First, you need make sure you have docker installed. If you don't, you can install it using the following command if you are on Debian-based Linux distribution:
-
-    $ sudo apt-get update
-    $ sudo apt-get install docker.io
-
-Then, you need to create a docker container for your database:
-
-    $ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret_pass mysql
-
-The container will be running on port 3306. The secret_pass is the password for the root user of the database. You can use any password you want.
-
-You can find the container id by running the following command:
-
-    $ docker ps
-
-To ssh into the container, you can use the following command:
-
-    $ docker exec -it <container_id> /bin/bash
-    $ mysql -u root -psecret_pass
-
-You can now create the database:
-
-    $ CREATE DATABASE flask_db;
-
-The last thing is two create expected tables. The app works with two tables:
-
-    - `articles`
-    - `users`
-
-Table articles has the following columns:
-
-    - `id`: primary key
-    - `title`: string
-    - `body`: text
-    - `author`: string
-    - `date`: datetime
-    - `image`: string
-
-Use the following command to create the table:
-
-```MySQL
-CREATE TABLE IF NOT EXISTS articles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    body LONGTEXT NOT NULL,
-    author VARCHAR(255) NOT NULL,
-    date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    image VARCHAR(255) default '/static/images/default.jpg'
-);
+```bash
+# Run the automated setup script
+./scripts/setup.sh
 ```
 
-Table users has the following columns:
+Or manually:
 
-    - `id`: primary key
-    - `name`: string
-    - `email`: string
-    - `username`: string
-    - `password`: string
+```bash
+# Install dependencies
+./scripts/install_dependencies.sh
 
-```MySQL
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
-    email VARCHAR(40) NOT NULL,
-    username VARCHAR(20) NOT NULL,
-    password VARCHAR(255) NOT NULL
-);
+# Set up environment
+cp .env.example src/.env
+# Edit src/.env with your database credentials
+
+# Initialize database
+cd src && python init_app.py
+
+# Start the application
+uvicorn main:app --reload
 ```
 
-## Installation
- 
-You can run the application without the database, but you will not be able to create or edit articles. It is recommended to first setup the database.
+Visit http://localhost:8000 to see your blog in action!
 
-### Using virtual env:
- 
-    $ git clone https://github.com/djeada/Responsive-Blog-Template.git
-    $ cd Responsive-Blog-Template
-    $ virtualenv env
-    $ source env/bin/activate
-    $ pip install -r requirements.txt
-    $ python3 src/app.py
+## 📋 Features
 
-If you are using a Debian-based system and encountered toruble while installing the mysql requirements, try the following first:
+- **Modern FastAPI Framework**: High-performance, async-first web framework
+- **JWT Authentication**: Secure token-based authentication
+- **Interactive API Documentation**: Auto-generated API docs at `/docs`
+- **User Management**: Registration, login, and user dashboards
+- **Article Management**: Create, edit, delete, and view articles
+- **Responsive Design**: Mobile-friendly interface
+- **Type Safety**: Full type hints throughout the application
+- **Security First**: Protection against common vulnerabilities
 
-    $ apt install python3-dev default-libmysqlclient-dev build-essential
+![Dashboard](resources/dashboard_screenshot.png)
 
-### Using docker:
+## 🏗️ Architecture
 
-    $ docker run -d -p 5000:5000 -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/Responsive-Blog-Template:/app djeada/flask-blog
+- **FastAPI**: Modern Python web framework
+- **MySQL**: Database with async aiomysql driver
+- **JWT**: Token-based authentication
+- **Pydantic**: Data validation and serialization
+- **Jinja2**: Template engine for web pages
 
-## How to use?
+## 🐳 Docker Deployment
 
-If the application is running on localhost, you can access it using the following url:
+```bash
+docker-compose up -d
+```
 
-    http://localhost:5000/
+Access the application at http://localhost:8000 and phpMyAdmin at http://localhost:8080.
 
-To register a new user, you can use the following url:
+## 📚 API Documentation
 
-    http://localhost:5000/register
+Once running, explore the interactive API documentation:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-To login, you can use the following url:
+## 🧪 Testing
 
-    http://localhost:5000/login
+```bash
+./scripts/run_tests.sh
+```
 
-To create, edit or delete articles, you need to login first. Then, you can use the following url:
+## ⚙️ Configuration
 
-    http://localhost:5000/dashboard
+Set your environment variables in `src/.env`:
 
-## TODO
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=secret_pass
+DB_NAME=blog_db
+SECRET_KEY=your-secret-key-here
+```
 
-- [x] Add exception handling to all python files that are interacting with the DB.
-- [ ] Introduce variables to CSS.
-- [ ] Test on different devices.
-- [ ] Make full project specification.
-- [x] Enable storing of images in the database.
-- [ ] Add tags to the database.
+## 📄 License
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-Please make sure to update tests as appropriate.
+---
 
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
+For detailed documentation, see [README-FastAPI.md](README-FastAPI.md).

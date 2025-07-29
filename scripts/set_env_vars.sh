@@ -1,17 +1,33 @@
 #!/usr/bin/env bash
 set -e
 
-# Set environment variables for CI and local runs
+# Set environment variables for FastAPI Blog application
 
-export BLOG_DB_HOST="localhost"
-export BLOG_DB_USER="root"
-export BLOG_DB_PASSWORD="root"
-export BLOG_DB_NAME="flask_db"
-export BLOG_DB_CURSOR="DictCursor"
+# FastAPI Database Configuration
+export DB_HOST="localhost"
+export DB_PORT="3306"
+export DB_USER="root"
+export DB_PASSWORD="secret_pass"
+export DB_NAME="blog_db"
 
-# Also set MySQL client variables for compatibility
-export MYSQL_USER="$BLOG_DB_USER"
-export MYSQL_PASSWORD="$BLOG_DB_PASSWORD"
+# Security Configuration
+export SECRET_KEY="your-secret-key-here-change-this-in-production"
+export ALGORITHM="HS256"
+export ACCESS_TOKEN_EXPIRE_MINUTES="30"
+
+# Application Configuration
+export DEBUG="True"
+export APP_NAME="FastAPI Blog"
+export APP_VERSION="1.0.0"
+
+# CORS Configuration
+export ALLOWED_ORIGINS="http://localhost:3000,http://localhost:8000"
+
+# Test Configuration
+export BLOG_APP_PORT="8000"
+export BLOG_TEST_TIMEOUT="120"
+export BLOG_VERBOSE="false"
 
 # Optionally print for diagnostics
-printenv | grep BLOG_DB_
+echo "FastAPI Blog Environment Variables Set:"
+printenv | grep -E "(DB_|SECRET_|APP_|BLOG_)" | sort

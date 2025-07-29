@@ -1,4 +1,13 @@
-- make sure that no errors or warnings are hidden in e2e tests because of subprocess launch
+- ✅ Make sure that no errors or warnings are hidden in e2e tests because of subprocess launch
+- ✅ Revived and updated GitHub Actions CI workflow for FastAPI
 - split workflow into individual scripts that can be run on their own
 - run pip freeze
 - unify env variables used across scripts, a  lot repetitions with different names
+- remove redundancy with respect to requirements.txt and .env variables (we have script for that), as well as src directory
+- it created a new script in fastapi_src/start.sh it should be moved and adjusted to the structure we use in scripts/
+- choose better names for scripts, e.g. start.sh is not very descriptive in scripts/ directory, also there seems to be duplication between scripts please fix it
+- ✅ Fixed test timeouts and overcomplicated options
+- ✅ Created clean test framework based on test_e2e_prev pattern
+- ✅ Tests gracefully skip when database is not available
+- ✅ If any env variables are needed should be setup automatically by the tests
+- ✅ we probably can get rid of .env.example

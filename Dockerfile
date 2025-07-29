@@ -1,27 +1,29 @@
-# Use the official Ubuntu 16.04 as the base image
-FROM ubuntu:16.04
+FROM python:3.11-slim
 
-# Maintainer information
-MAINTAINER Adam Djellouli <addjellouli1@gmail.com>
+# Set working directory
+WORKDIR /app
 
-# Install dependencies
-RUN apt-get update -y && \
-    apt-get install -y python-pip python-dev
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt into the image
-COPY ./requirements.txt /src/requirements.txt
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the working directory
-WORKDIR /src
+# Copy application code and scripts
+COPY src/ .
+COPY scripts/set_env_vars.sh /app/scripts/
 
-# Install Python dependencies
-RUN pip install -r requirements.txt
+# Expose port
+EXPOSE 8000
 
-# Copy the entire current directory into the image
-COPY . /src
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Set the entry point to Python
-ENTRYPOINT ["python"]
-
-# Default command to run the application
-CMD ["app.py"]
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
