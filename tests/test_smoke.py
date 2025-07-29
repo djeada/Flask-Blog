@@ -72,32 +72,7 @@ def setup_database():
     
     repo_root = os.path.dirname(SCRIPTS_DIR)
     
-    # First ensure dependencies are installed using the install script
-    print("[INFO] Installing dependencies...")
-    install_script = os.path.join(SCRIPTS_DIR, 'install_dependencies.sh')
-    
-    try:
-        result = subprocess.run([
-            'bash', install_script
-        ], cwd=repo_root, capture_output=True, timeout=120)
-        
-        if result.returncode != 0:
-            print(f"[WARNING] Dependencies installation warning: {result.stderr.decode()}")
-            # Continue anyway as some dependencies might already be installed
-    
-    except subprocess.TimeoutExpired:
-        print("[WARNING] Dependencies installation timed out, continuing...")
-    
-    # Start MySQL with docker-compose
-    print("[INFO] Starting MySQL with docker-compose...")
-    docker_result = subprocess.run([
-        'docker-compose', 'up', '-d', 'mysql'
-    ], cwd=repo_root, capture_output=True, timeout=60)
-    
-    if docker_result.returncode != 0:
-        pytest.skip(f"Could not start MySQL: {docker_result.stderr.decode()}")
-    
-    # Set up environment for wait script
+    # Set up environment for all operations
     env = os.environ.copy()
     env.update({
         'MYSQL_USER': 'root',
@@ -109,20 +84,62 @@ def setup_database():
         'DB_NAME': 'blog_db'
     })
     
-    # Use the wait script to wait for MySQL
-    print("[INFO] Waiting for MySQL to be ready...")
-    wait_script = os.path.join(SCRIPTS_DIR, 'wait_for_mysql.sh')
+    # Check if MySQL is already available
+    print("[INFO] Checking if MySQL is already available...")
+    mysql_available = False
+    try:
+        result = subprocess.run([
+            'mysqladmin', 'ping', '-h', 'localhost', '-P', '3306', 
+            '--protocol=TCP', '-u', 'root', '-psecret_pass', '--silent'
+        ], capture_output=True, timeout=5, env=env)
+        
+        if result.returncode == 0:
+            mysql_available = True
+            print("[INFO] MySQL is already available, skipping Docker setup")
+        
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        print("[INFO] MySQL not available or mysql client not found")
+    
+    # If MySQL is not available, try to start it with docker-compose
+    if not mysql_available:
+        print("[INFO] Starting MySQL with docker-compose...")
+        docker_result = subprocess.run([
+            'docker-compose', 'up', '-d', 'mysql'
+        ], cwd=repo_root, capture_output=True, timeout=60)
+        
+        if docker_result.returncode != 0:
+            pytest.skip(f"Could not start MySQL: {docker_result.stderr.decode()}")
+        
+        # Use the wait script to wait for MySQL
+        print("[INFO] Waiting for MySQL to be ready...")
+        wait_script = os.path.join(SCRIPTS_DIR, 'wait_for_mysql.sh')
+        
+        try:
+            wait_result = subprocess.run([
+                'bash', wait_script
+            ], cwd=repo_root, env=env, capture_output=True, timeout=60)
+            
+            if wait_result.returncode != 0:
+                pytest.skip(f"MySQL failed to start: {wait_result.stderr.decode()}")
+                
+        except subprocess.TimeoutExpired:
+            pytest.skip("MySQL startup timed out")
+    
+    # Install dependencies only if needed
+    print("[INFO] Installing dependencies if needed...")
+    install_script = os.path.join(SCRIPTS_DIR, 'install_dependencies.sh')
     
     try:
-        wait_result = subprocess.run([
-            'bash', wait_script
-        ], cwd=repo_root, env=env, capture_output=True, timeout=60)
+        result = subprocess.run([
+            'bash', install_script
+        ], cwd=repo_root, env=env, capture_output=True, timeout=120)
         
-        if wait_result.returncode != 0:
-            pytest.skip(f"MySQL failed to start: {wait_result.stderr.decode()}")
-            
+        if result.returncode != 0:
+            print(f"[WARNING] Dependencies installation warning: {result.stderr.decode()}")
+            # Continue anyway as dependencies might already be installed
+    
     except subprocess.TimeoutExpired:
-        pytest.skip("MySQL startup timed out")
+        print("[WARNING] Dependencies installation timed out, continuing...")
     
     # Prepare database schema using the script
     print("[INFO] Preparing database schema...")

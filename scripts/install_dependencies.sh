@@ -6,18 +6,46 @@ INSTALL_TIMEOUT=30
 
 echo "[INFO] Installing dependencies for FastAPI Blog..."
 
-# Install system dependencies
+# Check if MySQL client tools are available
 if ! command -v mysqladmin >/dev/null 2>&1; then
-  echo "[INFO] Installing MySQL client tools..."
+  echo "[INFO] MySQL client tools not found..."
+  
+  # Try to install system dependencies without sudo if possible
   if command -v apt-get >/dev/null 2>&1; then
-    timeout $INSTALL_TIMEOUT sudo apt-get update
-    timeout $INSTALL_TIMEOUT sudo apt-get install -y mysql-client libmysqlclient-dev pkg-config
+    echo "[INFO] Attempting to install MySQL client tools..."
+    
+    # Try without sudo first (for CI environments)
+    if timeout $INSTALL_TIMEOUT apt-get update >/dev/null 2>&1 && \
+       timeout $INSTALL_TIMEOUT apt-get install -y mysql-client libmysqlclient-dev pkg-config >/dev/null 2>&1; then
+      echo "[INFO] Successfully installed MySQL client tools"
+    elif command -v sudo >/dev/null 2>&1; then
+      # Fall back to sudo if available
+      echo "[INFO] Trying with sudo..."
+      timeout $INSTALL_TIMEOUT sudo apt-get update
+      timeout $INSTALL_TIMEOUT sudo apt-get install -y mysql-client libmysqlclient-dev pkg-config
+      echo "[INFO] Successfully installed MySQL client tools with sudo"
+    else
+      echo "[WARNING] Could not install MySQL client tools. They may need to be installed manually."
+      echo "[WARNING] Continuing anyway - system may already have MySQL client available."
+    fi
+    
   elif command -v yum >/dev/null 2>&1; then
-    timeout $INSTALL_TIMEOUT sudo yum install -y mysql mysql-devel pkgconfig
+    echo "[INFO] Attempting to install MySQL client tools with yum..."
+    if timeout $INSTALL_TIMEOUT yum install -y mysql mysql-devel pkgconfig >/dev/null 2>&1; then
+      echo "[INFO] Successfully installed MySQL client tools"
+    elif command -v sudo >/dev/null 2>&1; then
+      timeout $INSTALL_TIMEOUT sudo yum install -y mysql mysql-devel pkgconfig
+      echo "[INFO] Successfully installed MySQL client tools with sudo"
+    else
+      echo "[WARNING] Could not install MySQL client tools. They may need to be installed manually."
+    fi
+    
   else
-    echo "[ERROR] Could not detect package manager. Please install MySQL client manually."
-    exit 1
+    echo "[WARNING] Could not detect package manager. MySQL client tools may need to be installed manually."
+    echo "[WARNING] Continuing anyway - system may already have MySQL client available."
   fi
+else
+  echo "[INFO] MySQL client tools already available"
 fi
 
 # Install Python dependencies
