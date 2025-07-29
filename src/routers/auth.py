@@ -33,7 +33,8 @@ async def login_for_access_token(
     if not user:
         return templates.TemplateResponse(
             "login.html", 
-            {"request": {}, "error": "Incorrect username or password"}
+            {"request": {}, "error": "Incorrect username or password"},
+            status_code=status.HTTP_401_UNAUTHORIZED
         )
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
