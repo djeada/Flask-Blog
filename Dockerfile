@@ -14,11 +14,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code and scripts
 COPY src/ .
-
-# Create .env file from example
-COPY .env.example .env
+COPY scripts/set_env_vars.sh /app/scripts/
 
 # Expose port
 EXPOSE 8000

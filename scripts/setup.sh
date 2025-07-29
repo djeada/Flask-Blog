@@ -34,28 +34,17 @@ install_dependencies() {
 setup_environment() {
     echo "Setting up environment variables..."
     
-    if [ ! -f "$SRC_DIR/.env" ]; then
-        if [ -f "$REPO_ROOT/.env.example" ]; then
-            cp "$REPO_ROOT/.env.example" "$SRC_DIR/.env"
-            echo "✓ Created .env file from example"
-            echo "⚠️  Please edit .env file with your database credentials!"
-        else
-            echo "❌ .env.example file not found"
-            exit 1
-        fi
-    else
-        echo "✓ .env file already exists"
-    fi
+    # Environment variables are now managed by set_env_vars.sh script
+    # No .env file needed as the application uses environment variables directly
+    echo "✓ Using environment variables from set_env_vars.sh script"
 }
 
 # Function to check database connection
 check_database() {
     echo "Checking database connection..."
     
-    # Source environment variables
-    if [ -f "$SRC_DIR/.env" ]; then
-        export $(grep -v '^#' "$SRC_DIR/.env" | xargs)
-    fi
+    # Use set_env_vars.sh for environment configuration
+    source "$REPO_ROOT/scripts/set_env_vars.sh"
     
     DB_HOST="${DB_HOST:-localhost}"
     DB_PORT="${DB_PORT:-3306}"
@@ -152,11 +141,10 @@ main() {
     echo "==============================================="
     echo ""
     echo "Next steps:"
-    echo "1. Edit src/.env with your database credentials"
-    echo "2. Ensure MySQL is running"
-    echo "3. Run: cd src && python init_app.py"
-    echo "4. Start the app: cd src && uvicorn main:app --reload"
-    echo "5. Visit: http://localhost:8000"
+    echo "1. Ensure MySQL is running"
+    echo "2. Run: cd src && python init_app.py"
+    echo "3. Start the app: cd src && uvicorn main:app --reload"
+    echo "4. Visit: http://localhost:8000"
     echo ""
     echo "Available commands:"
     echo "- Run tests: scripts/run_tests.sh"

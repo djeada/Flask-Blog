@@ -19,14 +19,11 @@ source venv/bin/activate
 
 # Install dependencies
 echo "Installing dependencies..."
-pip install -r ../requirements-fastapi.txt
+pip install -r ../requirements.txt
 
-# Copy environment file if it doesn't exist
-if [ ! -f ".env" ]; then
-    echo "Creating .env file from example..."
-    cp ../.env.example .env
-    echo "⚠️  Please edit .env file with your database credentials before running the application!"
-fi
+# Source environment variables
+echo "Setting up environment variables..."
+source ../scripts/set_env_vars.sh
 
 # Initialize database tables
 echo "Initializing database..."
