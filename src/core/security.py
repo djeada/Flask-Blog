@@ -60,7 +60,12 @@ async def get_current_user(
     db: aiomysql.Connection = Depends(get_database)
 ) -> dict:
     """Get current authenticated user from cookie or bearer token"""
-    token = request.cookies.get("access_token")
+    token = request.cookies.get("access_token", None)
+    if token and not request.cookies.get("access_token", None, secure=True, samesite="Lax"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Insecure cookie attributes detected",
+        )
     
     if not token:
         # Try authorization header as fallback
