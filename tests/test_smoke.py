@@ -41,7 +41,14 @@ class PortManager:
                 if proc.info['username'] != current_user:
                     continue
                     
-                for conn in proc.net_connections(kind='inet'):
+                # Use net_connections() for current psutil versions
+                try:
+                    connections = proc.net_connections(kind='inet')
+                except AttributeError:
+                    # Fall back to connections() for older versions
+                    connections = proc.connections(kind='inet')
+                
+                for conn in connections:
                     if conn.laddr and conn.laddr.port == port:
                         print(f"Killing process {proc.pid} using port {port} (user: {current_user})")
                         proc.kill()
