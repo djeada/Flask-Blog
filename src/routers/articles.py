@@ -59,25 +59,11 @@ async def single_article_page(
 
 @router.post("/")
 async def create_article(
-    title: str = Form(...),
-    body: str = Form(...),
+    article: ArticleCreate,
     current_user: dict = Depends(get_current_user),
     db: aiomysql.Connection = Depends(get_database)
 ):
     """Create a new article"""
-    # Validate input
-    if len(title) < 1 or len(title) > 200:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Title must be between 1 and 200 characters"
-        )
-    
-    if len(body) < 30:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Body must be at least 30 characters"
-        )
-    
     try:
         cursor = await db.cursor()
         await cursor.execute(
