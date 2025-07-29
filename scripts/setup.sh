@@ -63,7 +63,19 @@ check_database() {
     DB_PASSWORD="${DB_PASSWORD:-secret_pass}"
     
     if command_exists mysql; then
-        if mysql -h "$DB_HOST" -P "$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; then
+        # Create MySQL configuration file for secure authentication
+        MYSQL_CONFIG_FILE="$HOME/.my.cnf"
+        if [ ! -f "$MYSQL_CONFIG_FILE" ]; then
+            echo "[client]" > "$MYSQL_CONFIG_FILE"
+            echo "host=$DB_HOST" >> "$MYSQL_CONFIG_FILE"
+            echo "port=$DB_PORT" >> "$MYSQL_CONFIG_FILE"
+            echo "user=$DB_USER" >> "$MYSQL_CONFIG_FILE"
+            echo "password=$DB_PASSWORD" >> "$MYSQL_CONFIG_FILE"
+            chmod 600 "$MYSQL_CONFIG_FILE"
+            echo "✓ Created MySQL configuration file at $MYSQL_CONFIG_FILE"
+        fi
+        
+        if mysql --defaults-file="$MYSQL_CONFIG_FILE" -e "SELECT 1;" >/dev/null 2>&1; then
             echo "✓ Database connection successful"
             return 0
         else
