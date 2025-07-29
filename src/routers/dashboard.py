@@ -34,7 +34,6 @@ async def dashboard_page(
             {
                 "request": request, 
                 "articles": articles,
-                "current_user": current_user,
                 "msg": "No Articles Found" if not articles else None
             }
         )
