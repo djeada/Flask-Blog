@@ -7,7 +7,7 @@
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
-          {% if current_user %}
+          {% if current_user|default(None) %}
           <li><a href="/dashboard">Dashboard</a></li>
           <li><a href="/auth/logout">Logout</a></li>
           {% else %}
