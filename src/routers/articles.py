@@ -68,7 +68,7 @@ async def create_article(
         cursor = await db.cursor()
         await cursor.execute(
             "INSERT INTO articles (title, body, author) VALUES (%s, %s, %s)",
-            (title, body, current_user["username"])
+            (article.title, article.body, current_user["username"])
         )
         await db.commit()
         await cursor.close()

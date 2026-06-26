@@ -9,35 +9,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: secret_pass
-          MYSQL_DATABASE: blog_db
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost --protocol=TCP -u root -psecret_pass --silent" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=10
 
     env:
-      # Database configuration
-      DB_HOST: "localhost"
-      DB_PORT: "3306"
-      DB_USER: "root"
-      DB_PASSWORD: "secret_pass"
-      DB_NAME: "blog_db"
-      
-      # MySQL client configuration
-      MYSQL_USER: "root"
-      MYSQL_PASSWORD: "secret_pass"
-      
       # FastAPI configuration
       SECRET_KEY: "test-secret-key-for-ci"
       DEBUG: "True"
+      BLOG_DATABASE_URL: "sqlite:///./blog_engine_ci.db"
+      BLOG_SEED_DEMO: "False"
 
     steps:
     - uses: actions/checkout@v4
@@ -49,12 +27,6 @@ jobs:
     
     - name: Install dependencies
       run: bash scripts/install_dependencies.sh
-    
-    - name: Wait for MySQL to be ready
-      run: bash scripts/wait_for_mysql.sh
-    
-    - name: Prepare database schema
-      run: bash scripts/prepare_db_schema.sh
     
     - name: Run tests
       run: bash scripts/run_tests.sh

@@ -60,6 +60,7 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+blog_engine*.db
 
 # Flask stuff:
 instance/
@@ -131,4 +132,3 @@ dmypy.json
 # Sphinx
 docs/build/
 docs/source/_templates/
-
