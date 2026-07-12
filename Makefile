@@ -1,72 +1,30 @@
-# Project Configuration
-PROJECT_NAME := $(shell basename $(CURDIR))
-VIRTUAL_ENVIRONMENT := $(CURDIR)/.venv
-LOCAL_PYTHON := $(VIRTUAL_ENVIRONMENT)/bin/python3
+PYTHON := .venv/bin/python
 
-# Help documentation
-define HELP
-Manage $(PROJECT_NAME). Usage:
+.PHONY: help install run test check clean
 
-make run        - Run $(PROJECT_NAME).
-make install    - Create virtual environment & install dependencies.
-make test       - Run the test suite.
-make format     - Format code with Python's Black library.
-make lint       - Check code formatting with flake8.
-make clean      - Remove cached files and lock files.
-endef
-export HELP
+help:
+	@echo "make install  Create .venv and install development dependencies"
+	@echo "make run      Start the API on http://localhost:8000"
+	@echo "make test     Run tests"
+	@echo "make check    Compile source files and run tests"
+	@echo "make clean    Remove generated caches and local databases"
 
-# Phony targets
-.PHONY: run install test format lint clean help
+install:
+	python3 -m venv .venv
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -r requirements-dev.txt
 
-# Ensure virtual environment exists
-env: $(LOCAL_PYTHON)
+run:
+	cd src && ../$(PYTHON) -m uvicorn main:app --reload
 
-# Display help
-all help:
-	@echo "$$HELP"
+test:
+	$(PYTHON) -m pytest -q
 
-# Install dependencies
-install: $(LOCAL_PYTHON)
-	. $(VIRTUAL_ENVIRONMENT)/bin/activate
-	$(LOCAL_PYTHON) -m pip install --upgrade pip setuptools wheel
-	$(LOCAL_PYTHON) -m pip install -r requirements.txt
+check:
+	$(PYTHON) -m compileall -q src tests
+	$(PYTHON) -m pytest -q
 
-# Run the project
-run: env
-	. $(VIRTUAL_ENVIRONMENT)/bin/activate && cd src && uvicorn main:app --reload
-
-# Run tests
-test: env
-	. $(VIRTUAL_ENVIRONMENT)/bin/activate && pytest tests -v
-
-# Format the code
-format: env
-	isort --multi-line=3 .
-	black .
-
-# Lint the code
-lint:
-	flake8 . --count \
-		--select=E9,F63,F7,F82 \
-		--exclude .git,.github,__pycache__,.pytest_cache,.venv,logs,creds,docs \
-		--show-source \
-		--statistics
-
-# Clean cached and unnecessary files
 clean:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -delete
-	find . -name 'poetry.lock' -delete
-	find . -name 'Pipfile.lock' -delete
-	find . -name '*.log' -delete
+	find . -type d -name __pycache__ -prune -exec rm -rf {} +
+	rm -rf .pytest_cache .coverage htmlcov
 	find . -name 'blog_engine*.db' -delete
-	find . -wholename 'logs/*.json' -delete
-	rm -rf .pytest_cache
-	find . -type d -name '.pytest_cache' -prune -exec rm -rf {} +
-	find . -wholename '**/.webassets-cache' -delete
-	find . -wholename './logs' -delete
-
-# Create virtual environment if it does not exist
-$(LOCAL_PYTHON):
-	if [ ! -d "$(VIRTUAL_ENVIRONMENT)" ]; then python3 -m venv $(VIRTUAL_ENVIRONMENT); fi

@@ -1,95 +1,46 @@
-# FastAPI Blog
+# FastAPI Blog API
 
-A modern, high-performance blog application built with FastAPI, featuring async operations, JWT authentication, and comprehensive API documentation.
+A compact FastAPI/SQLAlchemy example with JWT authentication, role-based post permissions, SQLite persistence, rate limiting, and generated OpenAPI documentation.
 
-![Home Page](resources/home_screenshot.png)
+## Run locally
 
-## 🚀 Quick Start
-
-Get up and running in minutes:
+Python 3.11 or newer is recommended.
 
 ```bash
-# Run the automated setup script
-./scripts/setup.sh
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+make run
 ```
 
-Or manually:
+Open <http://localhost:8000/docs>. The database and demo users are created on first startup. Set `BLOG_SEED_DEMO=false` to start without demo content.
 
-```bash
-# Install dependencies
-./scripts/install_dependencies.sh
-
-# Set up environment
-cp .env.example src/.env
-# Edit src/.env with your database credentials
-
-# Initialize database
-cd src && python init_app.py
-
-# Start the application
-uvicorn main:app --reload
-```
-
-Visit http://localhost:8000 to see your blog in action!
-
-## 📋 Features
-
-- **Modern FastAPI Framework**: High-performance, async-first web framework
-- **JWT Authentication**: Secure token-based authentication
-- **Interactive API Documentation**: Auto-generated API docs at `/docs`
-- **User Management**: Registration, login, and user dashboards
-- **Article Management**: Create, edit, delete, and view articles
-- **Responsive Design**: Mobile-friendly interface
-- **Type Safety**: Full type hints throughout the application
-- **Security First**: Protection against common vulnerabilities
-
-![Dashboard](resources/dashboard_screenshot.png)
-
-## 🏗️ Architecture
-
-- **FastAPI**: Modern Python web framework
-- **MySQL**: Database with async aiomysql driver
-- **JWT**: Token-based authentication
-- **Pydantic**: Data validation and serialization
-- **Jinja2**: Template engine for web pages
-
-## 🐳 Docker Deployment
-
-```bash
-docker-compose up -d
-```
-
-Access the application at http://localhost:8000 and phpMyAdmin at http://localhost:8080.
-
-## 📚 API Documentation
-
-Once running, explore the interactive API documentation:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-## 🧪 Testing
-
-```bash
-./scripts/run_tests.sh
-```
-
-## ⚙️ Configuration
-
-Set your environment variables in `src/.env`:
+The default database is `blog_engine.db`. Configuration can be supplied through environment variables or a repository-root `.env` file:
 
 ```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=secret_pass
-DB_NAME=blog_db
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=replace-this-value
+BLOG_DATABASE_URL=sqlite:///./blog_engine.db
+BLOG_SEED_DEMO=true
+API_RATE_LIMIT_PER_MINUTE=120
 ```
 
-## 📄 License
+For non-local deployments, always provide a strong `SECRET_KEY`.
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## Commands
 
----
+```bash
+make test     # run the test suite
+make check    # compile sources and run tests
+make clean    # remove caches and local databases
+docker compose up --build
+```
 
-For detailed documentation, see [README-FastAPI.md](README-FastAPI.md).
+The API endpoints are under `/api/v1/posts`. Use `/docs` for request schemas and the complete endpoint list.
+
+## Demo identities
+
+When seeding is enabled, these JWT subjects are available for API exploration: `admin`, `editor`, `author`, `contributor`, and `subscriber`. This repository demonstrates authorization behavior; it does not expose a password/login endpoint. Create a JWT with the configured secret and `sub`, `user_id`, `role`, and `exp` claims, as shown in the tests.
+
+## License
+
+[MIT](LICENSE)

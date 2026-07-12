@@ -1,32 +1,17 @@
-name: FastAPI Blog CI
+name: CI
 
 on:
   push:
-    branches: [ main, fastapi-cleanup ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    env:
-      # FastAPI configuration
-      SECRET_KEY: "test-secret-key-for-ci"
-      DEBUG: "True"
-      BLOG_DATABASE_URL: "sqlite:///./blog_engine_ci.db"
-      BLOG_SEED_DEMO: "False"
-
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-    
-    - name: Install dependencies
-      run: bash scripts/install_dependencies.sh
-    
-    - name: Run tests
-      run: bash scripts/run_tests.sh
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: make check PYTHON=python

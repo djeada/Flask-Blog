@@ -60,7 +60,10 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-blog_engine*.db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
 
 # Flask stuff:
 instance/
