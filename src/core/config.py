@@ -1,10 +1,12 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEFAULT_SECRET_KEY = "change-me-in-production"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
-    SECRET_KEY: str = "change-me-in-production"
+    SECRET_KEY: str = DEFAULT_SECRET_KEY
     ALGORITHM: str = "HS256"
     DEBUG: bool = False
     APP_NAME: str = "FastAPI Blog"

@@ -200,3 +200,137 @@ def test_delete_missing_post_returns_404(client):
     response = client.delete("/api/v1/posts/999", headers=auth_headers(1, "admin", Role.ADMIN))
 
     assert response.status_code == 404
+
+
+def test_list_posts_supports_pagination(client):
+    headers = auth_headers(1, "admin", Role.ADMIN)
+    for i in range(3):
+        client.post("/api/v1/posts", json={**create_payload(), "title": f"Post {i}"}, headers=headers)
+
+    page = client.get("/api/v1/posts", params={"limit": 2})
+    assert [p["title"] for p in page.json()] == ["Post 2", "Post 1"]
+    rest = client.get("/api/v1/posts", params={"limit": 2, "offset": 2})
+    assert [p["title"] for p in rest.json()] == ["Post 0", "Welcome to the API demo"]
+    assert client.get("/api/v1/posts", params={"limit": 0}).status_code == 400
+
+
+def test_update_with_explicit_null_leaves_field_unchanged(client):
+    headers = auth_headers(1, "admin", Role.ADMIN)
+
+    response = client.put("/api/v1/posts/1", json={"title": None, "body": "New body"}, headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["title"] == "Welcome to the API demo"
+    assert response.json()["body"] == "New body"
+
+
+def test_token_without_exp_or_with_unknown_role_is_handled(client):
+    no_exp = jwt.encode({"sub": "admin", "user_id": 1}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    assert client.post(
+        "/api/v1/posts", json=create_payload(), headers={"Authorization": f"Bearer {no_exp}"}
+    ).status_code == 401
+
+    odd_role = jwt.encode(
+        {"sub": "subscriber", "user_id": 5, "role": "Superuser", "exp": datetime.now(UTC) + timedelta(minutes=5)},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+    response = client.post("/api/v1/posts", json=create_payload(), headers={"Authorization": f"Bearer {odd_role}"})
+    assert response.status_code == 403
+
+
+def test_token_role_claim_cannot_escalate_privileges(client):
+    headers = auth_headers(5, "subscriber", Role.ADMIN)
+
+    assert client.post("/api/v1/posts", json=create_payload(), headers=headers).status_code == 403
+
+
+def test_access_token_cookie_is_not_accepted(client):
+    client.cookies.set("access_token", token_for(1, "admin", Role.ADMIN))
+
+    assert client.post("/api/v1/posts", json=create_payload()).status_code == 401
+
+
+def test_rate_limit_is_per_client_across_paths(client, monkeypatch):
+    monkeypatch.setattr(settings, "API_RATE_LIMIT_PER_MINUTE", 3)
+
+    codes = [client.get(f"/api/v1/posts/{i}").status_code for i in range(5)]
+
+    assert codes[-1] == 429
+    assert codes.count(429) == 2
+
+
+def test_only_admin_can_list_users_and_change_roles(client):
+    admin = auth_headers(1, "admin", Role.ADMIN)
+
+    users = client.get("/api/v1/users", headers=admin)
+    assert users.status_code == 200
+    assert [u["username"] for u in users.json()][:2] == ["admin", "editor"]
+
+    for uid, name, role in [(2, "editor", Role.EDITOR), (3, "author", Role.AUTHOR), (5, "subscriber", Role.SUBSCRIBER)]:
+        headers = auth_headers(uid, name, role)
+        assert client.get("/api/v1/users", headers=headers).status_code == 403
+        assert client.put("/api/v1/users/5/role", json={"role": "Admin"}, headers=headers).status_code == 403
+    assert client.get("/api/v1/users").status_code == 401
+
+    changed = client.put("/api/v1/users/5/role", json={"role": "Author"}, headers=admin)
+    assert changed.status_code == 200
+    assert changed.json()["role"] == "Author"
+
+    # The new role takes effect immediately, even with an old token.
+    sub = auth_headers(5, "subscriber", Role.SUBSCRIBER)
+    assert client.post("/api/v1/posts", json=create_payload(), headers=sub).status_code == 201
+
+
+def test_role_change_errors(client):
+    admin = auth_headers(1, "admin", Role.ADMIN)
+
+    assert client.put("/api/v1/users/999/role", json={"role": "Editor"}, headers=admin).status_code == 404
+    assert client.put("/api/v1/users/5/role", json={"role": "Root"}, headers=admin).status_code == 400
+    demote = client.put("/api/v1/users/1/role", json={"role": "Editor"}, headers=admin)
+    assert demote.status_code == 409
+
+
+def test_drafts_visible_only_to_owner_and_privileged_roles(client):
+    assert client.get("/api/v1/posts/2", headers=auth_headers(3, "author", Role.AUTHOR)).status_code == 200
+    assert client.get("/api/v1/posts/2", headers=auth_headers(1, "admin", Role.ADMIN)).status_code == 200
+    assert client.get("/api/v1/posts/2", headers=auth_headers(5, "subscriber", Role.SUBSCRIBER)).status_code == 404
+    draft = client.get("/api/v1/posts/2", headers=auth_headers(3, "author", Role.AUTHOR))
+    assert draft.headers["Cache-Control"] == "private, no-store"
+
+
+def test_invalid_expired_and_unknown_user_tokens_return_401(client):
+    expired = jwt.encode(
+        {"sub": "admin", "user_id": 1, "exp": datetime.now(UTC) - timedelta(minutes=1)},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+    ghost = token_for(99, "ghost", Role.ADMIN)
+    for token in (expired, ghost, "garbage"):
+        response = client.post(
+            "/api/v1/posts", json=create_payload(), headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 401
+        assert response.headers["WWW-Authenticate"] == "Bearer"
+
+
+def test_author_cannot_create_for_or_reassign_to_another_author(client):
+    headers = auth_headers(3, "author", Role.AUTHOR)
+
+    assert client.post("/api/v1/posts", json={**create_payload(), "author_id": 1}, headers=headers).status_code == 403
+    own = client.post("/api/v1/posts", json=create_payload(), headers=headers).json()["id"]
+    assert client.put(f"/api/v1/posts/{own}", json={"author_id": 1}, headers=headers).status_code == 403
+
+
+def test_openapi_has_examples_and_documents_error_responses(client):
+    spec = client.get("/openapi.json").json()
+    posts = spec["paths"]["/api/v1/posts"]
+    item = spec["paths"]["/api/v1/posts/{post_id}"]
+
+    assert "429" in posts["get"]["responses"]
+    assert {"401", "403", "429"} <= set(posts["post"]["responses"])
+    assert {"401", "403", "404"} <= set(item["put"]["responses"])
+    assert {"401", "403", "404"} <= set(item["delete"]["responses"])
+    assert spec["components"]["schemas"]["PostResponse"]["examples"]
+    assert spec["components"]["schemas"]["PostCreate"]["examples"]
+    assert "/api/v1/users/{user_id}/role" in spec["paths"]

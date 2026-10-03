@@ -93,7 +93,37 @@ class PostResponse(PostBase):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "API launch",
+                    "body": "Published through the REST API.",
+                    "status": "published",
+                    "author_id": 1,
+                    "created_at": "2026-01-01T12:00:00Z",
+                    "updated_at": "2026-01-01T12:00:00Z",
+                }
+            ]
+        },
+    )
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    role: Role
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={"examples": [{"id": 3, "username": "author", "role": "Author"}]},
+    )
+
+
+class RoleUpdate(BaseModel):
+    role: Role = Field(examples=["Editor"])
 
 
 class TokenClaims(BaseModel):

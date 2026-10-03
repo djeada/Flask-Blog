@@ -1,23 +1,26 @@
+import logging
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from time import time
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from blog_engine.database import SessionLocal, create_blog_tables
 from blog_engine.demo import seed_demo_content
-from core.config import settings
-from routers import api_v1_posts
+from core.config import DEFAULT_SECRET_KEY, settings
+from routers import api_v1_posts, api_v1_users
 
-
+logger = logging.getLogger(__name__)
 rate_limit_buckets = defaultdict(deque)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    if settings.SECRET_KEY == DEFAULT_SECRET_KEY:
+        logger.warning("SECRET_KEY is the insecure default; set a strong SECRET_KEY outside local development")
     create_blog_tables()
     if settings.BLOG_SEED_DEMO:
         with SessionLocal() as db:
@@ -43,7 +46,7 @@ async def api_rate_limit_and_headers(request: Request, call_next):
     window_start = now - 60
     limit = settings.API_RATE_LIMIT_PER_MINUTE
     client = request.client.host if request.client else "unknown"
-    bucket = rate_limit_buckets[(client, request.url.path)]
+    bucket = rate_limit_buckets[client]
     while bucket and bucket[0] < window_start:
         bucket.popleft()
 
@@ -55,6 +58,8 @@ async def api_rate_limit_and_headers(request: Request, call_next):
         "X-RateLimit-Reset": str(reset),
     }
     if remaining <= 0:
+        if not bucket:
+            rate_limit_buckets.pop(client, None)
         headers.update({"X-RateLimit-Remaining": "0", "Retry-After": str(max(reset - int(now), 1))})
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -73,7 +78,8 @@ async def api_rate_limit_and_headers(request: Request, call_next):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    code = status.HTTP_400_BAD_REQUEST if request.url.path.startswith("/api/v1/") else status.HTTP_422_UNPROCESSABLE_ENTITY
+    is_api = request.url.path.startswith("/api/v1/")
+    code = status.HTTP_400_BAD_REQUEST if is_api else status.HTTP_422_UNPROCESSABLE_ENTITY
     return JSONResponse(status_code=code, content={"detail": exc.errors()})
 
 
@@ -85,6 +91,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(api_v1_posts.router)
+app.include_router(api_v1_users.router)
 
 
 @app.get("/", include_in_schema=False)
