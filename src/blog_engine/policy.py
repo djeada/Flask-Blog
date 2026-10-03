@@ -1,7 +1,6 @@
 from blog_engine.models import Post, PostStatus, Role
 from blog_engine.schemas import Principal
 
-
 FULL_CRUD_ROLES = {Role.ADMIN, Role.EDITOR}
 
 
@@ -31,3 +30,7 @@ def can_read_post(principal: Principal | None, post: Post) -> bool:
     if principal.role in FULL_CRUD_ROLES:
         return True
     return post.author_id == principal.user_id
+
+
+def can_manage_users(principal: Principal) -> bool:
+    return principal.role == Role.ADMIN

@@ -1,12 +1,13 @@
 PYTHON := .venv/bin/python
 
-.PHONY: help install run test check clean
+.PHONY: help install run test lint check clean
 
 help:
 	@echo "make install  Create .venv and install development dependencies"
 	@echo "make run      Start the API on http://localhost:8000"
 	@echo "make test     Run tests"
-	@echo "make check    Compile source files and run tests"
+	@echo "make lint     Run ruff"
+	@echo "make check    Lint, compile source files and run tests"
 	@echo "make clean    Remove generated caches and local databases"
 
 install:
@@ -20,7 +21,10 @@ run:
 test:
 	$(PYTHON) -m pytest -q
 
-check:
+lint:
+	$(PYTHON) -m ruff check .
+
+check: lint
 	$(PYTHON) -m compileall -q src tests
 	$(PYTHON) -m pytest -q
 

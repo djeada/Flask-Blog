@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from blog_engine import policy, repository
@@ -7,7 +7,10 @@ from blog_engine.database import get_blog_db
 from blog_engine.models import PostStatus, Role
 from blog_engine.schemas import ErrorResponse, PostCreate, PostResponse, PostUpdate, Principal
 
-router = APIRouter(prefix="/api/v1/posts", tags=["posts"])
+ERR_401 = {"model": ErrorResponse, "description": "Missing, invalid or expired token"}
+ERR_429 = {"model": ErrorResponse, "description": "Rate limit exceeded"}
+
+router = APIRouter(prefix="/api/v1/posts", tags=["posts"], responses={429: ERR_429})
 
 
 def _author_id_for_create(
@@ -29,10 +32,16 @@ def _author_id_for_create(
     "",
     response_model=list[PostResponse],
     summary="List published posts",
+    description="Public. Returns published posts, newest first.",
 )
-def list_posts(response: Response, db: Session = Depends(get_blog_db)) -> list[PostResponse]:
+def list_posts(
+    response: Response,
+    limit: int = Query(20, ge=1, le=100, description="Maximum posts to return."),
+    offset: int = Query(0, ge=0, description="Posts to skip."),
+    db: Session = Depends(get_blog_db),
+) -> list[PostResponse]:
     response.headers["Cache-Control"] = "public, max-age=60"
-    return repository.list_published_posts(db)
+    return repository.list_published_posts(db, limit=limit, offset=offset)
 
 
 @router.get(
@@ -61,7 +70,7 @@ def retrieve_post(
     "",
     response_model=PostResponse,
     status_code=status.HTTP_201_CREATED,
-    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
+    responses={400: {"model": ErrorResponse}, 401: ERR_401, 403: {"model": ErrorResponse}},
     summary="Create a post",
 )
 def create_post(
@@ -79,7 +88,12 @@ def create_post(
 @router.put(
     "/{post_id}",
     response_model=PostResponse,
-    responses={400: {"model": ErrorResponse}, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        401: ERR_401,
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
     summary="Update a post",
 )
 def update_post(
@@ -104,7 +118,7 @@ def update_post(
 @router.delete(
     "/{post_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={401: ERR_401, 403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
     summary="Delete a post",
 )
 def delete_post(

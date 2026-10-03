@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 
 from blog_engine.models import BlogUser, Post, PostStatus, Role
 
-
 DEMO_USERS = [
     (1, "admin", Role.ADMIN),
     (2, "editor", Role.EDITOR),
