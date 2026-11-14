@@ -26,9 +26,24 @@ class BlogUser(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[Role] = mapped_column(SqlEnum(Role), nullable=False, default=Role.SUBSCRIBER)
 
     posts: Mapped[list["Post"]] = relationship(back_populates="author")
+
+
+class RoleProfile(Base):
+    __tablename__ = "role_profiles"
+
+    role: Mapped[Role] = mapped_column(SqlEnum(Role), primary_key=True)
+    description: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class RoleCapability(Base):
+    __tablename__ = "role_capabilities"
+
+    role: Mapped[Role] = mapped_column(SqlEnum(Role), primary_key=True)
+    capability: Mapped[str] = mapped_column(String(64), primary_key=True)
 
 
 class Post(Base):

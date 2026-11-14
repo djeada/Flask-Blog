@@ -1,6 +1,6 @@
-# FastAPI Blog API
+# FastAPI Blog
 
-A compact FastAPI/SQLAlchemy example with JWT authentication, role-based post permissions, SQLite persistence, rate limiting, and generated OpenAPI documentation.
+A compact FastAPI/SQLAlchemy blog with a server-rendered Jinja2 site, JWT authentication, role-based post permissions, SQLite persistence, rate limiting, and generated OpenAPI documentation.
 
 ## Run locally
 
@@ -13,7 +13,7 @@ python -m pip install -r requirements-dev.txt
 make run
 ```
 
-Open <http://localhost:8000/docs>. The database and demo users are created on first startup. Set `BLOG_SEED_DEMO=false` to start without demo content.
+Open <http://localhost:8000> for the site or <http://localhost:8000/docs> for the API. The database and demo users are created on first startup. Set `BLOG_SEED_DEMO=false` to start without demo content.
 
 The default database is `blog_engine.db`. Configuration can be supplied through environment variables or a repository-root `.env` file:
 
@@ -22,9 +22,20 @@ SECRET_KEY=replace-this-value
 BLOG_DATABASE_URL=sqlite:///./blog_engine.db
 BLOG_SEED_DEMO=true
 API_RATE_LIMIT_PER_MINUTE=120
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+SESSION_COOKIE_SECURE=false
 ```
 
-For non-local deployments, always provide a strong `SECRET_KEY`.
+For non-local deployments, always provide a strong `SECRET_KEY` and set `SESSION_COOKIE_SECURE=true` when serving over HTTPS.
+
+## Web interface
+
+- `/` — paginated list of published posts
+- `/posts/{id}` — post detail; draft posts are visible only to their author and Admins/Editors
+- `/login` / `/logout` — browser login using an HttpOnly cookie
+- `/docs` — interactive API documentation
+
+The browser UI stores its JWT in an HttpOnly, SameSite=Lax cookie. The REST API itself only accepts `Authorization: Bearer <token>` and does not read the cookie.
 
 ## Commands
 
@@ -36,13 +47,23 @@ make clean    # remove caches and local databases
 docker compose up --build
 ```
 
-The API endpoints are under `/api/v1/posts`. Use `/docs` for request schemas and the complete endpoint list. `GET /api/v1/posts` is paginated with `limit` (1-100, default 20) and `offset`.
+The API endpoints are under `/api/v1`. Use `/docs` for request schemas and the complete endpoint list. `GET /api/v1/posts` is paginated with `limit` (1-100, default 20) and `offset`. `POST /api/v1/auth/login` exchanges a username and password for a JWT.
 
-Admins can list users (`GET /api/v1/users`) and change a role (`PUT /api/v1/users/{id}/role`); the last Admin cannot be demoted. Role permissions: Admin/Editor have full CRUD, Author creates and updates own posts, Contributor creates drafts only, Subscriber and anonymous users are read-only.
+Role permissions are stored in the database and enforced from capability assignments. `GET /api/v1/roles` lists each role with its description and current capabilities; `GET /api/v1/capabilities` lists the capability vocabulary. A caller with the `users.manage` capability can update a role with `PUT /api/v1/roles/{role}`, and changes apply immediately to subsequent requests. The Admin role is immutable, so it cannot be edited or locked out. Admins can list users (`GET /api/v1/users`) and change a role (`PUT /api/v1/users/{id}/role`); the last Admin cannot be demoted. Default capabilities: Admin/Editor have full CRUD, Author creates and updates own posts, Contributor creates drafts only, Subscriber and anonymous users are read-only. Drafts are visible to their author (any role) and roles with `posts.read_any_draft`.
 
 ## Demo identities
 
-When seeding is enabled, these JWT subjects are available for API exploration: `admin`, `editor`, `author`, `contributor`, and `subscriber`. This repository demonstrates authorization behavior; it does not expose a password/login endpoint. Create a JWT with the configured secret and `sub`, `user_id`, and `exp` claims, as shown in the tests, and send it as `Authorization: Bearer <token>`. `exp` is required, and the role is always read from the database, not the token.
+When seeding is enabled, the following accounts are available in the browser UI and through `POST /api/v1/auth/login`:
+
+| Username | Password | Role |
+| --- | --- | --- |
+| `admin` | `admin123` | Admin |
+| `editor` | `editor123` | Editor |
+| `author` | `author123` | Author |
+| `contributor` | `contributor123` | Contributor |
+| `subscriber` | `subscriber123` | Subscriber |
+
+Passwords are stored as PBKDF2-SHA256 hashes. JWTs require `exp` and `sub` claims; the role is always read from the database, not the token. You can still mint tokens directly with the configured secret as shown in the tests.
 
 ## License
 

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Log in · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+  <section class="auth-card">
+    <h1>Log in</h1>
+    <p class="muted">Sign in to manage posts through the API and, soon, the admin area.</p>
+
+    {% if error %}
+      <div class="alert" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login" class="stack">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" value="{{ username | default('') }}" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button type="submit" class="button">Log in</button>
+    </form>
+
+    {% if demo_accounts %}
+      <div class="demo-accounts">
+        <h2>Demo accounts</h2>
+        <p class="muted">Seeded only when demo content is enabled.</p>
+        <ul>
+          {% for account in demo_accounts %}
+            <li><code>{{ account.username }}</code> / <code>{{ account.password }}</code></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

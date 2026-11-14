@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from blog_engine import policy, repository
 from blog_engine.auth import get_current_principal, get_optional_principal
 from blog_engine.database import get_blog_db
-from blog_engine.models import PostStatus, Role
+from blog_engine.models import PostStatus
 from blog_engine.schemas import ErrorResponse, PostCreate, PostResponse, PostUpdate, Principal
 
 ERR_401 = {"model": ErrorResponse, "description": "Missing, invalid or expired token"}
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/v1/posts", tags=["posts"], responses={429: ERR_4
 def _author_id_for_create(
     payload: PostCreate, principal: Principal, db: Session
 ) -> int:
-    if principal.role in {Role.ADMIN, Role.EDITOR}:
+    if policy.can_assign_author(principal):
         author_id = payload.author_id or principal.user_id
     else:
         if payload.author_id is not None and payload.author_id != principal.user_id:
@@ -107,7 +107,7 @@ def update_post(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     if not policy.can_update_post(principal, post):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Role cannot update this post")
-    if principal.role not in {Role.ADMIN, Role.EDITOR} and payload.author_id is not None:
+    if not policy.can_assign_author(principal) and payload.author_id is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot reassign post author")
     if payload.author_id is not None and not repository.user_exists(db, payload.author_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="author_id does not exist")

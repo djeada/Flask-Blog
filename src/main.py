@@ -4,14 +4,18 @@ from contextlib import asynccontextmanager
 from time import time
 
 from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from blog_engine.database import SessionLocal, create_blog_tables
 from blog_engine.demo import seed_demo_content
+from blog_engine.repository import ensure_role_defaults
 from core.config import DEFAULT_SECRET_KEY, settings
-from routers import api_v1_posts, api_v1_users
+from routers import api_v1_auth, api_v1_posts, api_v1_roles, api_v1_users, web
 
 logger = logging.getLogger(__name__)
 rate_limit_buckets = defaultdict(deque)
@@ -22,8 +26,9 @@ async def lifespan(_: FastAPI):
     if settings.SECRET_KEY == DEFAULT_SECRET_KEY:
         logger.warning("SECRET_KEY is the insecure default; set a strong SECRET_KEY outside local development")
     create_blog_tables()
-    if settings.BLOG_SEED_DEMO:
-        with SessionLocal() as db:
+    with SessionLocal() as db:
+        ensure_role_defaults(db)
+        if settings.BLOG_SEED_DEMO:
             seed_demo_content(db)
     yield
 
@@ -80,7 +85,28 @@ async def api_rate_limit_and_headers(request: Request, call_next):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     is_api = request.url.path.startswith("/api/v1/")
     code = status.HTTP_400_BAD_REQUEST if is_api else status.HTTP_422_UNPROCESSABLE_ENTITY
-    return JSONResponse(status_code=code, content={"detail": exc.errors()})
+    return JSONResponse(
+        status_code=code, content={"detail": jsonable_encoder(exc.errors())}
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == status.HTTP_404_NOT_FOUND and not request.url.path.startswith("/api/"):
+        return web.templates.TemplateResponse(
+            "404.html",
+            {
+                "request": request,
+                "principal": None,
+                "app_name": settings.APP_NAME,
+            },
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=getattr(exc, "headers", None),
+    )
 
 
 app.add_middleware(
@@ -90,13 +116,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/static", StaticFiles(directory=str(web.STATIC_DIR)), name="static")
+app.include_router(api_v1_auth.router)
+app.include_router(api_v1_roles.router)
 app.include_router(api_v1_posts.router)
 app.include_router(api_v1_users.router)
-
-
-@app.get("/", include_in_schema=False)
-async def root():
-    return {"name": settings.APP_NAME, "docs": "/docs", "health": "/health"}
+app.include_router(web.router)
 
 
 @app.get("/health", tags=["system"])

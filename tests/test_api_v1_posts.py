@@ -13,11 +13,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ.setdefault("BLOG_SEED_DEMO", "False")
 
+from blog_engine import policy
 from blog_engine.database import Base, get_blog_db
-from blog_engine.demo import seed_demo_content
-from blog_engine.models import Role
+from blog_engine.demo import DEMO_POSTS, seed_demo_content
+from blog_engine.models import Post, PostStatus, Role
+from blog_engine.repository import ensure_role_defaults
+from blog_engine.schemas import Principal
 from core.config import settings
 from main import app, rate_limit_buckets
+
+PUBLISHED_SEED_COUNT = sum(
+    1 for post in DEMO_POSTS if post["status"] == PostStatus.PUBLISHED
+)
 
 
 @pytest.fixture()
@@ -28,6 +35,7 @@ def client(tmp_path):
     Base.metadata.create_all(bind=engine)
 
     with TestingSessionLocal() as db:
+        ensure_role_defaults(db)
         seed_demo_content(db)
 
     def override_get_blog_db():
@@ -75,8 +83,9 @@ def test_get_posts_lists_published_posts_for_anonymous_users(client):
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "public, max-age=60"
     posts = response.json()
-    assert len(posts) == 1
-    assert posts[0]["status"] == "published"
+    assert len(posts) == PUBLISHED_SEED_COUNT
+    assert all(post["status"] == "published" for post in posts)
+    assert "Welcome to the API demo" in [post["title"] for post in posts]
     assert "X-RateLimit-Limit" in response.headers
 
 
@@ -210,7 +219,9 @@ def test_list_posts_supports_pagination(client):
     page = client.get("/api/v1/posts", params={"limit": 2})
     assert [p["title"] for p in page.json()] == ["Post 2", "Post 1"]
     rest = client.get("/api/v1/posts", params={"limit": 2, "offset": 2})
-    assert [p["title"] for p in rest.json()] == ["Post 0", "Welcome to the API demo"]
+    rest_titles = [p["title"] for p in rest.json()]
+    assert rest_titles[0] == "Post 0"
+    assert len(rest_titles) == 2
     assert client.get("/api/v1/posts", params={"limit": 0}).status_code == 400
 
 
@@ -334,3 +345,172 @@ def test_openapi_has_examples_and_documents_error_responses(client):
     assert spec["components"]["schemas"]["PostResponse"]["examples"]
     assert spec["components"]["schemas"]["PostCreate"]["examples"]
     assert "/api/v1/users/{user_id}/role" in spec["paths"]
+
+
+def test_roles_endpoint_lists_descriptions_and_capabilities(client):
+    response = client.get("/api/v1/roles")
+
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "public, max-age=300"
+    roles = {item["role"]: item for item in response.json()}
+    assert list(roles) == ["Admin", "Editor", "Author", "Contributor", "Subscriber"]
+    assert all(item["description"] for item in roles.values())
+    assert roles["Admin"]["capabilities"] == list(policy.CAPABILITY_ORDER)
+    assert "users.manage" not in roles["Editor"]["capabilities"]
+    assert "posts.publish" in roles["Author"]["capabilities"]
+    assert "posts.publish" not in roles["Contributor"]["capabilities"]
+    assert "posts.create_draft" in roles["Contributor"]["capabilities"]
+    assert roles["Subscriber"]["capabilities"] == [
+        "posts.read_published",
+        "posts.read_own_draft",
+    ]
+
+    single = client.get("/api/v1/roles/Author")
+    assert single.status_code == 200
+    assert single.json() == roles["Author"]
+    assert client.get("/api/v1/roles/Wizard").status_code == 400
+
+
+def test_capabilities_endpoint_is_separate_from_roles(client):
+    response = client.get("/api/v1/capabilities")
+
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "public, max-age=300"
+    capabilities = response.json()
+    assert [item["key"] for item in capabilities] == list(policy.CAPABILITY_ORDER)
+    assert all(item["label"] and item["description"] for item in capabilities)
+    assert all("roles" not in item and "exclusive" not in item for item in capabilities)
+
+    paths = client.get("/openapi.json").json()["paths"]
+    assert "/api/v1/roles" in paths
+    assert "/api/v1/roles/{role}" in paths
+    assert "put" in paths["/api/v1/roles/{role}"]
+    assert "/api/v1/capabilities" in paths
+
+
+def test_policy_behavior_matches_role_capability_assignments(client):
+    roles = {item["role"]: item for item in client.get("/api/v1/roles").json()}
+
+    for role in Role:
+        assigned = set(roles[role.value]["capabilities"])
+        principal = Principal(
+            user_id=1,
+            username=role.value,
+            role=role,
+            capabilities=frozenset(assigned),
+        )
+        own_draft = Post(
+            title="Own", body="Body", status=PostStatus.DRAFT, author_id=1
+        )
+        other_draft = Post(
+            title="Other", body="Body", status=PostStatus.DRAFT, author_id=2
+        )
+        other_published = Post(
+            title="Public", body="Body", status=PostStatus.PUBLISHED, author_id=2
+        )
+        allowed = {
+            "posts.read_published": policy.can_read_post(principal, other_published),
+            "posts.read_own_draft": policy.can_read_post(principal, own_draft),
+            "posts.read_any_draft": policy.can_read_post(principal, other_draft),
+            "posts.create_draft": policy.can_create_post(principal, PostStatus.DRAFT),
+            "posts.publish": policy.can_create_post(principal, PostStatus.PUBLISHED),
+            "posts.update_own": policy.can_update_post(principal, own_draft),
+            "posts.update_any": policy.can_update_post(principal, other_draft),
+            "posts.assign_author": policy.can_assign_author(principal),
+            "posts.delete": policy.can_delete_post(principal, other_draft),
+            "users.manage": policy.can_manage_users(principal),
+        }
+        enforced = {key for key, is_allowed in allowed.items() if is_allowed}
+        assert assigned == enforced
+
+
+def test_admin_can_update_role_and_authorization_changes_immediately(client):
+    contributor_headers = auth_headers(4, "contributor", Role.CONTRIBUTOR)
+    admin_headers = auth_headers(1, "admin", Role.ADMIN)
+
+    denied = client.post(
+        "/api/v1/posts", json=create_payload("published"), headers=contributor_headers
+    )
+    assert denied.status_code == 403
+
+    updated = client.put(
+        "/api/v1/roles/Contributor",
+        json={
+            "description": "Can publish after an editorial promotion.",
+            "capabilities": [
+                "posts.read_published",
+                "posts.read_own_draft",
+                "posts.create_draft",
+                "posts.publish",
+            ],
+        },
+        headers=admin_headers,
+    )
+    assert updated.status_code == 200
+    assert updated.json()["description"] == "Can publish after an editorial promotion."
+    assert "posts.publish" in updated.json()["capabilities"]
+
+    published = client.post(
+        "/api/v1/posts", json=create_payload("published"), headers=contributor_headers
+    )
+    assert published.status_code == 201
+
+    fetched = client.get("/api/v1/roles/Contributor")
+    assert fetched.json() == updated.json()
+
+
+def test_role_update_permissions_validation_and_admin_immutability(client):
+    admin_headers = auth_headers(1, "admin", Role.ADMIN)
+    payload = {"description": "Nope", "capabilities": ["posts.publish"]}
+
+    assert (
+        client.put(
+            "/api/v1/roles/Contributor",
+            json=payload,
+            headers=auth_headers(2, "editor", Role.EDITOR),
+        ).status_code
+        == 403
+    )
+    assert (
+        client.put(
+            "/api/v1/roles/Contributor",
+            json=payload,
+            headers=auth_headers(3, "author", Role.AUTHOR),
+        ).status_code
+        == 403
+    )
+    assert client.put("/api/v1/roles/Contributor", json=payload).status_code == 401
+    assert (
+        client.put("/api/v1/roles/Admin", json=payload, headers=admin_headers).status_code
+        == 409
+    )
+    assert (
+        client.put(
+            "/api/v1/roles/Contributor",
+            json={"capabilities": ["posts.fly"]},
+            headers=admin_headers,
+        ).status_code
+        == 400
+    )
+    assert (
+        client.put(
+            "/api/v1/roles/Contributor",
+            json={"description": "   "},
+            headers=admin_headers,
+        ).status_code
+        == 400
+    )
+
+
+def test_description_only_update_preserves_capabilities(client):
+    before = client.get("/api/v1/roles/Author").json()
+
+    updated = client.put(
+        "/api/v1/roles/Author",
+        json={"description": "Writes and manages their own articles."},
+        headers=auth_headers(1, "admin", Role.ADMIN),
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["description"] == "Writes and manages their own articles."
+    assert updated.json()["capabilities"] == before["capabilities"]

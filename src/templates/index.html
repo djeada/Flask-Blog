@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Posts · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <h1>Latest posts</h1>
+    <p class="muted">
+      {% if total %}
+        Showing {{ first_item }}–{{ last_item }} of {{ total }} published {{ "post" if total == 1 else "posts" }}
+      {% else %}
+        No published posts yet
+      {% endif %}
+    </p>
+  </div>
+  {% if principal %}
+    <a class="button" href="/docs">Write with the API</a>
+  {% endif %}
+</section>
+
+{% if posts %}
+  <div class="post-list">
+    {% for post in posts %}
+      <article class="post-card">
+        <h2><a href="/posts/{{ post.id }}">{{ post.title }}</a></h2>
+        <p class="post-excerpt">
+          {{ post.body[:200] }}{% if post.body | length > 200 %}&hellip;{% endif %}
+        </p>
+        <div class="post-meta">
+          <span>By {{ post.author.username }}</span>
+          <span aria-hidden="true">·</span>
+          <time datetime="{{ post.created_at.isoformat() }}">{{ post.created_at.strftime("%b %d, %Y") }}</time>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% if page > 1 %}
+        <a class="button secondary" href="/?page={{ page - 1 }}&amp;per_page={{ per_page }}">Previous</a>
+      {% else %}
+        <span class="button secondary disabled" aria-disabled="true">Previous</span>
+      {% endif %}
+      <span class="muted">Page {{ page }} of {{ total_pages }}</span>
+      {% if page < total_pages %}
+        <a class="button secondary" href="/?page={{ page + 1 }}&amp;per_page={{ per_page }}">Next</a>
+      {% else %}
+        <span class="button secondary disabled" aria-disabled="true">Next</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <h2>Nothing published yet</h2>
+    <p class="muted">Published posts will appear here.</p>
+  </div>
+{% endif %}
+{% endblock %}
