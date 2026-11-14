@@ -88,18 +88,20 @@ def set_user_role(db: Session, user: BlogUser, role: Role) -> BlogUser:
 
 
 def ensure_role_defaults(db: Session) -> None:
-    for role in Role:
-        if db.get(RoleProfile, role) is not None:
-            continue
+    new_roles = [role for role in Role if db.get(RoleProfile, role) is None]
+    for role in new_roles:
         db.add(
             RoleProfile(
                 role=role,
                 description=policy.DEFAULT_ROLE_DESCRIPTIONS[role],
             )
         )
-        for capability in policy.CAPABILITY_ORDER:
-            if capability in policy.DEFAULT_ROLE_CAPABILITIES[role]:
-                db.add(RoleCapability(role=role, capability=capability))
+    if new_roles:
+        db.flush()
+        for role in new_roles:
+            for capability in policy.CAPABILITY_ORDER:
+                if capability in policy.DEFAULT_ROLE_CAPABILITIES[role]:
+                    db.add(RoleCapability(role=role, capability=capability))
     db.commit()
 
 
@@ -144,6 +146,7 @@ def update_role_settings(
                 description=description or policy.DEFAULT_ROLE_DESCRIPTIONS[role],
             )
         )
+        db.flush()
     elif description is not None:
         profile.description = description
 

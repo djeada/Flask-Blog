@@ -13,17 +13,17 @@ python -m pip install -r requirements-dev.txt
 make run
 ```
 
-Open <http://localhost:8000> for the site or <http://localhost:8000/docs> for the API. The database and demo users are created on first startup. Set `BLOG_SEED_DEMO=false` to start without demo content.
+Open <http://localhost:8000> for the site or <http://localhost:8000/docs> for the API. `make run` applies database migrations before starting the server, and demo users are seeded on first startup. Set `BLOG_SEED_DEMO=false` to start without demo content.
 
-The default database is `blog_engine.db`. Configuration can be supplied through environment variables or a repository-root `.env` file:
+The default database is `src/blog_engine.db`. The path is resolved from the source tree, so the app uses the same file regardless of the working directory. Configuration can be supplied through environment variables or a repository-root `.env` file:
 
 ```env
 SECRET_KEY=replace-this-value
-BLOG_DATABASE_URL=sqlite:///./blog_engine.db
 BLOG_SEED_DEMO=true
 API_RATE_LIMIT_PER_MINUTE=120
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 SESSION_COOKIE_SECURE=false
+# BLOG_DATABASE_URL=sqlite:////absolute/path/to/blog_engine.db
 ```
 
 For non-local deployments, always provide a strong `SECRET_KEY` and set `SESSION_COOKIE_SECURE=true` when serving over HTTPS.
@@ -31,7 +31,7 @@ For non-local deployments, always provide a strong `SECRET_KEY` and set `SESSION
 ## Web interface
 
 - `/` — paginated list of published posts
-- `/posts/{id}` — post detail; draft posts are visible only to their author and Admins/Editors
+- `/posts/{id}` — post detail; draft posts are visible only to their author and roles with `posts.read_any_draft`
 - `/login` / `/logout` — browser login using an HttpOnly cookie
 - `/docs` — interactive API documentation
 
@@ -40,12 +40,31 @@ The browser UI stores its JWT in an HttpOnly, SameSite=Lax cookie. The REST API 
 ## Commands
 
 ```bash
+make migrate  # apply database migrations
+make revision m="add example table"  # autogenerate a migration
 make test     # run the test suite
 make lint     # ruff
 make check    # lint, compile sources and run tests
 make clean    # remove caches and local databases
 docker compose up --build
 ```
+
+Docker Compose applies migrations automatically before starting the app.
+
+## Database migrations
+
+Schema changes are tracked with Alembic. Migrations live in `migrations/versions`, and `make migrate` applies them to `BLOG_DATABASE_URL`. `make run` runs migrations first, while Docker does the same in its startup command.
+
+After changing SQLAlchemy models, generate and review a revision:
+
+```bash
+make revision m="describe the schema change"
+make migrate
+```
+
+To baseline a database that already has the current schema but no Alembic history, stamp it once with `.venv/bin/alembic stamp head`.
+
+## API and permissions
 
 The API endpoints are under `/api/v1`. Use `/docs` for request schemas and the complete endpoint list. `GET /api/v1/posts` is paginated with `limit` (1-100, default 20) and `offset`. `POST /api/v1/auth/login` exchanges a username and password for a JWT.
 

@@ -1,4 +1,3 @@
-import os
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -10,8 +9,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-os.environ.setdefault("SECRET_KEY", "test-secret-key")
-os.environ.setdefault("BLOG_SEED_DEMO", "False")
 
 from blog_engine import policy
 from blog_engine.database import Base, get_blog_db
@@ -19,7 +16,7 @@ from blog_engine.demo import DEMO_POSTS, seed_demo_content
 from blog_engine.models import Post, PostStatus, Role
 from blog_engine.repository import ensure_role_defaults
 from blog_engine.schemas import Principal
-from core.config import settings
+from core.config import DEFAULT_DATABASE_PATH, settings
 from main import app, rate_limit_buckets
 
 PUBLISHED_SEED_COUNT = sum(
@@ -514,3 +511,9 @@ def test_description_only_update_preserves_capabilities(client):
     assert updated.status_code == 200
     assert updated.json()["description"] == "Writes and manages their own articles."
     assert updated.json()["capabilities"] == before["capabilities"]
+
+
+def test_default_database_path_is_absolute_and_tests_are_isolated():
+    assert DEFAULT_DATABASE_PATH.is_absolute()
+    assert DEFAULT_DATABASE_PATH.name == "blog_engine.db"
+    assert settings.BLOG_DATABASE_URL == "sqlite://"
