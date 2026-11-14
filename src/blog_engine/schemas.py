@@ -9,6 +9,7 @@ class Principal(BaseModel):
     user_id: int
     username: str
     role: Role
+    capabilities: frozenset[str] = Field(default_factory=frozenset)
 
 
 class ErrorResponse(BaseModel):
@@ -126,7 +127,72 @@ class RoleUpdate(BaseModel):
     role: Role = Field(examples=["Editor"])
 
 
+class RoleInfo(BaseModel):
+    role: Role
+    description: str
+    capabilities: list[str] = Field(
+        description="Capability keys this role currently has, in catalog order.",
+        examples=[["posts.read_published", "posts.read_own_draft", "posts.create_draft"]],
+    )
+
+
+class RolePermissionsUpdate(BaseModel):
+    description: str | None = Field(default=None, min_length=1, max_length=255)
+    capabilities: list[str] | None = Field(
+        default=None,
+        description="Replaces the role's capability list. Unknown keys are rejected.",
+        examples=[["posts.read_published", "posts.create_draft"]],
+    )
+
+    @field_validator("description")
+    @classmethod
+    def optional_non_blank(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("Field cannot be blank")
+        return value
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "description": "Can write and publish posts.",
+                    "capabilities": ["posts.read_published", "posts.publish"],
+                }
+            ]
+        }
+    )
+
+
+class CapabilityInfo(BaseModel):
+    key: str = Field(examples=["posts.delete"])
+    label: str = Field(examples=["Delete posts"])
+    description: str
+
+
 class TokenClaims(BaseModel):
     sub: str
     user_id: int
     role: Role
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=64, examples=["admin"])
+    password: str = Field(min_length=1, max_length=128, examples=["admin123"])
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "token_type": "bearer",
+                    "expires_in": 3600,
+                }
+            ]
+        }
+    )

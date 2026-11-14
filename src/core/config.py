@@ -8,6 +8,8 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = DEFAULT_SECRET_KEY
     ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    SESSION_COOKIE_SECURE: bool = False
     DEBUG: bool = False
     APP_NAME: str = "FastAPI Blog"
     APP_VERSION: str = "1.0.0"
