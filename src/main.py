@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from blog_engine.database import SessionLocal, create_blog_tables
+from blog_engine.database import SessionLocal
 from blog_engine.demo import seed_demo_content
 from blog_engine.repository import ensure_role_defaults
 from core.config import DEFAULT_SECRET_KEY, settings
@@ -25,7 +25,9 @@ rate_limit_buckets = defaultdict(deque)
 async def lifespan(_: FastAPI):
     if settings.SECRET_KEY == DEFAULT_SECRET_KEY:
         logger.warning("SECRET_KEY is the insecure default; set a strong SECRET_KEY outside local development")
-    create_blog_tables()
+    logging.getLogger("uvicorn.error").info(
+        "Using database %s", settings.BLOG_DATABASE_URL
+    )
     with SessionLocal() as db:
         ensure_role_defaults(db)
         if settings.BLOG_SEED_DEMO:
