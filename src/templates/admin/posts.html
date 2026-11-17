@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Manage posts · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <h1>Posts</h1>
+    <p class="muted">{{ total }} {{ "post" if total == 1 else "posts" }} visible to you</p>
+  </div>
+  {% if flags.can_create_draft or flags.can_publish %}
+    <a class="button" href="/admin/posts/new">New post</a>
+  {% endif %}
+</section>
+
+<form method="get" action="/admin/posts" class="admin-toolbar" role="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search by title" aria-label="Search by title">
+  <select name="status" aria-label="Filter by status">
+    <option value="">All statuses</option>
+    {% for status in statuses %}
+      <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ status | capitalize }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="button secondary">Filter</button>
+</form>
+
+{% if posts %}
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Status</th>
+        <th scope="col">Author</th>
+        <th scope="col">Updated</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+        <tr>
+          <td data-label="Title">
+            <a href="/posts/{{ post.id }}">{{ post.title }}</a>
+          </td>
+          <td data-label="Status">
+            {% if post.status.value == "draft" %}
+              <span class="status-badge draft">Draft</span>
+            {% else %}
+              <span class="status-badge published">Published</span>
+            {% endif %}
+          </td>
+          <td data-label="Author">{{ post.author.username }}</td>
+          <td data-label="Updated">{{ post.updated_at.strftime("%b %d, %Y") }}</td>
+          <td data-label="Actions" class="row-actions">
+            {% if flags.can_update_any or (post.author_id == principal.user_id and "posts.update_own" in principal.capabilities) %}
+              <a href="/admin/posts/{{ post.id }}/edit">Edit</a>
+            {% endif %}
+            {% if flags.can_delete %}
+              <form method="post" action="/admin/posts/{{ post.id }}/delete" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="link-button danger">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if total_pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% set query_base = "/admin/posts?q=" ~ (q | urlencode) ~ "&status=" ~ (status_filter | urlencode) ~ "&" %}
+      {% if page > 1 %}
+        <a class="button secondary" href="{{ query_base }}page={{ page - 1 }}">Previous</a>
+      {% else %}
+        <span class="button secondary disabled" aria-disabled="true">Previous</span>
+      {% endif %}
+      <span class="muted">Page {{ page }} of {{ total_pages }}</span>
+      {% if page < total_pages %}
+        <a class="button secondary" href="{{ query_base }}page={{ page + 1 }}">Next</a>
+      {% else %}
+        <span class="button secondary disabled" aria-disabled="true">Next</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <h2>No posts found</h2>
+    <p class="muted">Try a different search or status filter.</p>
+  </div>
+{% endif %}
+{% endblock %}

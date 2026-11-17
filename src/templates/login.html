@@ -14,6 +14,7 @@
 
     <form method="post" action="/login" class="stack">
       <input type="hidden" name="next" value="{{ next_url }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label for="username">Username</label>
       <input id="username" name="username" type="text" value="{{ username | default('') }}" autocomplete="username" required>
       <label for="password">Password</label>

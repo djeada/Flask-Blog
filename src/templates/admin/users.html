@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Users &amp; roles · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <h1>Users &amp; roles</h1>
+    <p class="muted">Overview only. Role changes use the <code>/api/v1/users</code> API.</p>
+  </div>
+</section>
+
+<section class="admin-section">
+  <h2>Users</h2>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Username</th>
+        <th scope="col">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td data-label="ID">{{ user.id }}</td>
+          <td data-label="Username">{{ user.username }}</td>
+          <td data-label="Role">
+            <span class="role-badge role-{{ user.role.value | lower }}">{{ user.role.value }}</span>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="admin-section">
+  <h2>Roles</h2>
+  <div class="role-grid">
+    {% for role in roles %}
+      <div class="admin-card role-card">
+        <h3>
+          <span class="role-badge role-{{ role.value | lower }}">{{ role.value }}</span>
+        </h3>
+        <p class="muted">{{ role_descriptions.get(role, "") }}</p>
+        <ul class="capability-list">
+          {% for capability in role_capabilities[role] %}
+            <li>
+              <strong>{{ capability_labels.get(capability, capability) }}</strong>
+              <code>{{ capability }}</code>
+            </li>
+          {% else %}
+            <li class="muted">No capabilities assigned.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

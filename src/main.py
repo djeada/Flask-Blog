@@ -11,11 +11,12 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from blog_engine.bootstrap import ensure_initial_admin
 from blog_engine.database import SessionLocal
 from blog_engine.demo import seed_demo_content
 from blog_engine.repository import ensure_role_defaults
-from core.config import DEFAULT_SECRET_KEY, settings
-from routers import api_v1_auth, api_v1_posts, api_v1_roles, api_v1_users, web
+from core.config import DEFAULT_SECRET_KEY, settings, validate_production_settings
+from routers import admin, api_v1_auth, api_v1_posts, api_v1_roles, api_v1_users, web
 
 logger = logging.getLogger(__name__)
 rate_limit_buckets = defaultdict(deque)
@@ -23,6 +24,7 @@ rate_limit_buckets = defaultdict(deque)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    validate_production_settings(settings)
     if settings.SECRET_KEY == DEFAULT_SECRET_KEY:
         logger.warning("SECRET_KEY is the insecure default; set a strong SECRET_KEY outside local development")
     logging.getLogger("uvicorn.error").info(
@@ -30,6 +32,7 @@ async def lifespan(_: FastAPI):
     )
     with SessionLocal() as db:
         ensure_role_defaults(db)
+        ensure_initial_admin(db, settings.BLOG_ADMIN_USERNAME, settings.BLOG_ADMIN_PASSWORD)
         if settings.BLOG_SEED_DEMO:
             seed_demo_content(db)
     yield
@@ -124,6 +127,7 @@ app.include_router(api_v1_roles.router)
 app.include_router(api_v1_posts.router)
 app.include_router(api_v1_users.router)
 app.include_router(web.router)
+app.include_router(admin.router)
 
 
 @app.get("/health", tags=["system"])

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Not allowed · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="empty-state">
+  <h1>Not allowed</h1>
+  <p class="muted">{{ message or "You do not have permission to perform this action." }}</p>
+  <a class="button" href="/admin">Back to admin</a>
+</div>
+{% endblock %}

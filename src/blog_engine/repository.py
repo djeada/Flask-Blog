@@ -1,4 +1,4 @@
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from blog_engine import policy
@@ -16,6 +16,74 @@ def list_published_posts(db: Session, limit: int = 20, offset: int = 0) -> list[
             .offset(offset)
         )
     )
+
+
+def _visibility_condition(principal):
+    if principal is not None and "posts.read_any_draft" in principal.capabilities:
+        return or_(
+            Post.status == PostStatus.PUBLISHED,
+            Post.status == PostStatus.DRAFT,
+        )
+    if principal is not None and "posts.read_own_draft" in principal.capabilities:
+        return or_(
+            Post.status == PostStatus.PUBLISHED,
+            Post.author_id == principal.user_id,
+        )
+    return Post.status == PostStatus.PUBLISHED
+
+
+def _admin_post_filters(
+    principal,
+    q: str | None,
+    status_filter: str | None,
+):
+    conditions = [_visibility_condition(principal)]
+    if q:
+        conditions.append(Post.title.contains(q, autoescape=True))
+    if status_filter == PostStatus.PUBLISHED.value:
+        conditions.append(Post.status == PostStatus.PUBLISHED)
+    elif status_filter == PostStatus.DRAFT.value:
+        conditions.append(Post.status == PostStatus.DRAFT)
+    return conditions
+
+
+def list_posts_visible_to(
+    db: Session,
+    principal,
+    *,
+    q: str | None = None,
+    status_filter: str | None = None,
+    limit: int = 10,
+    offset: int = 0,
+) -> list[Post]:
+    query = select(Post)
+    for condition in _admin_post_filters(principal, q, status_filter):
+        query = query.where(condition)
+    return list(
+        db.scalars(
+            query.order_by(Post.created_at.desc(), Post.id.desc()).limit(limit).offset(offset)
+        )
+    )
+
+
+def count_posts_visible_to(
+    db: Session,
+    principal,
+    *,
+    q: str | None = None,
+    status_filter: str | None = None,
+) -> int:
+    query = select(func.count()).select_from(Post)
+    for condition in _admin_post_filters(principal, q, status_filter):
+        query = query.where(condition)
+    return db.scalar(query) or 0
+
+
+def count_drafts_visible_to(db: Session, principal) -> int:
+    query = select(func.count()).select_from(Post)
+    for condition in _admin_post_filters(principal, None, PostStatus.DRAFT.value):
+        query = query.where(condition)
+    return db.scalar(query) or 0
 
 
 def get_post(db: Session, post_id: int) -> Post | None:

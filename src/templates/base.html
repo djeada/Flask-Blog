@@ -16,7 +16,11 @@
         {% if principal %}
           <span class="role-badge role-{{ principal.role.value | lower }}">{{ principal.role.value }}</span>
           <span class="nav-user">{{ principal.username }}</span>
+          {% if "posts.create_draft" in principal.capabilities or "users.manage" in principal.capabilities %}
+            <a href="/admin">Admin</a>
+          {% endif %}
           <form method="post" action="/logout" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <button type="submit" class="link-button">Log out</button>
           </form>
         {% else %}
