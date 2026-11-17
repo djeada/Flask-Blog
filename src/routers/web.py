@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from blog_engine import policy, repository
+from blog_engine import csrf, policy, repository
 from blog_engine.auth import (
     ACCESS_COOKIE_NAME,
     authenticate_user,
@@ -31,23 +31,39 @@ def _safe_next(next_url: str | None) -> str:
     return "/"
 
 
-def _render(
+def render(
     request: Request,
     name: str,
     principal: Principal | None,
     status_code: int = 200,
     **context,
 ):
-    return templates.TemplateResponse(
+    token = request.cookies.get(csrf.CSRF_COOKIE_NAME)
+    issued_new_token = token is None
+    if issued_new_token:
+        token = csrf.generate_csrf_token()
+
+    response = templates.TemplateResponse(
         name,
         {
             "request": request,
             "principal": principal,
             "app_name": settings.APP_NAME,
+            "csrf_token": token,
         }
         | context,
         status_code=status_code,
     )
+    if issued_new_token:
+        response.set_cookie(
+            csrf.CSRF_COOKIE_NAME,
+            token,
+            httponly=True,
+            samesite="lax",
+            secure=settings.SESSION_COOKIE_SECURE,
+            path="/",
+        )
+    return response
 
 
 def _demo_accounts() -> list[dict[str, str]]:
@@ -72,7 +88,7 @@ def index(
     page = min(page, total_pages)
     offset = (page - 1) * per_page
     posts = repository.list_published_posts(db, limit=per_page, offset=offset)
-    return _render(
+    return render(
         request,
         "index.html",
         principal,
@@ -95,8 +111,8 @@ def post_detail(
 ):
     post = repository.get_post(db, post_id)
     if post is None or not policy.can_read_post(principal, post):
-        return _render(request, "404.html", principal, status_code=404)
-    return _render(request, "post_detail.html", principal, post=post)
+        return render(request, "404.html", principal, status_code=404)
+    return render(request, "post_detail.html", principal, post=post)
 
 
 @router.get("/login")
@@ -107,7 +123,7 @@ def login_page(
 ):
     if principal is not None:
         return RedirectResponse(_safe_next(next), status_code=303)
-    return _render(
+    return render(
         request,
         "login.html",
         None,
@@ -122,10 +138,23 @@ def login_submit(
     username: str = Form(""),
     password: str = Form(""),
     next_url: str = Form("/", alias="next"),
+    csrf_token: str = Form("", alias=csrf.CSRF_FORM_FIELD),
     db: Session = Depends(get_blog_db),
 ):
+    if not csrf.csrf_matches(request, csrf_token):
+        return render(
+            request,
+            "login.html",
+            None,
+            next_url=_safe_next(next_url),
+            error="Your session expired. Please try again.",
+            username=username,
+            demo_accounts=_demo_accounts(),
+            status_code=403,
+        )
+
     if not username.strip() or not password:
-        return _render(
+        return render(
             request,
             "login.html",
             None,
@@ -138,7 +167,7 @@ def login_submit(
 
     user = authenticate_user(db, username.strip(), password)
     if user is None:
-        return _render(
+        return render(
             request,
             "login.html",
             None,
@@ -163,7 +192,12 @@ def login_submit(
 
 
 @router.post("/logout")
-def logout() -> RedirectResponse:
+def logout(
+    request: Request,
+    csrf_token: str = Form("", alias=csrf.CSRF_FORM_FIELD),
+) -> RedirectResponse:
+    if not csrf.csrf_matches(request, csrf_token):
+        return RedirectResponse("/", status_code=303)
     response = RedirectResponse("/", status_code=303)
     response.delete_cookie(ACCESS_COOKIE_NAME, path="/")
     return response

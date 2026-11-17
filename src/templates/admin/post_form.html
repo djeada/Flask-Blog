@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit post" if editing else "New post" }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <h1>{{ "Edit post" if editing else "New post" }}</h1>
+    {% if editing and post %}
+      <p class="muted">
+        <a href="/posts/{{ post.id }}">View public page</a>
+      </p>
+    {% endif %}
+  </div>
+  <a class="button secondary" href="/admin/posts">Back to posts</a>
+</section>
+
+<div class="admin-card">
+  {% if errors %}
+    <div class="alert" role="alert">
+      <ul class="error-list">
+        {% for key, message in errors.items() %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ action }}" class="stack admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" value="{{ form_title }}" maxlength="200" required
+           {% if errors["title"] %}aria-invalid="true" aria-describedby="title-error"{% endif %}>
+    {% if errors["title"] %}
+      <p class="field-error" id="title-error">{{ errors["title"] }}</p>
+    {% endif %}
+
+    <label for="body">Body (Markdown)</label>
+    <textarea id="body" name="body" rows="14" required
+              {% if errors["body"] %}aria-invalid="true" aria-describedby="body-error"{% endif %}>{{ form_body }}</textarea>
+    {% if errors["body"] %}
+      <p class="field-error" id="body-error">{{ errors["body"] }}</p>
+    {% endif %}
+
+    <label for="status">Status</label>
+    <select id="status" name="status" {% if errors["status"] %}aria-invalid="true" aria-describedby="status-error"{% endif %}>
+      <option value="draft" {% if form_status == "draft" %}selected{% endif %}>Draft</option>
+      {% if flags.can_publish or editing %}
+        <option value="published" {% if form_status == "published" %}selected{% endif %}>Published</option>
+      {% endif %}
+    </select>
+    {% if errors["status"] %}
+      <p class="field-error" id="status-error">{{ errors["status"] }}</p>
+    {% endif %}
+
+    {% if flags.can_assign_author %}
+      <label for="author_id">Author</label>
+      <select id="author_id" name="author_id" {% if errors["author_id"] %}aria-invalid="true" aria-describedby="author-error"{% endif %}>
+        {% for author in authors %}
+          <option value="{{ author.id }}" {% if form_author_id == author.id | string %}selected{% endif %}>{{ author.username }}</option>
+        {% endfor %}
+      </select>
+      {% if errors["author_id"] %}
+        <p class="field-error" id="author-error">{{ errors["author_id"] }}</p>
+      {% endif %}
+    {% endif %}
+
+    <button type="submit" class="button">{{ "Save changes" if editing else "Create post" }}</button>
+  </form>
+
+  {% if editing and post and flags.can_delete %}
+    <div class="danger-zone">
+      <h2>Danger zone</h2>
+      <p class="muted">Deleting a post is permanent.</p>
+      <form method="post" action="/admin/posts/{{ post.id }}/delete">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="button danger-button">Delete this post</button>
+      </form>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

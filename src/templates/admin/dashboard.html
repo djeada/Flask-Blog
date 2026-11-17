@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Admin · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <h1>Admin</h1>
+    <p class="muted">Signed in as {{ principal.username }} ({{ principal.role.value }}).</p>
+  </div>
+  {% if flags.can_create_draft or flags.can_publish %}
+    <a class="button" href="/admin/posts/new">New post</a>
+  {% endif %}
+</section>
+
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/posts?status=published">
+    <span class="stat-value">{{ published_count }}</span>
+    <span class="stat-label">Published</span>
+  </a>
+  <a class="stat-card" href="/admin/posts?status=draft">
+    <span class="stat-value">{{ draft_count }}</span>
+    <span class="stat-label">{{ "Drafts" if "posts.read_any_draft" in principal.capabilities else "Your drafts" }}</span>
+  </a>
+  <a class="stat-card" href="/admin/posts">
+    <span class="stat-value">{{ total_count }}</span>
+    <span class="stat-label">Visible to you</span>
+  </a>
+  {% if flags.can_manage_users %}
+    <a class="stat-card" href="/admin/users">
+      <span class="stat-label">Users &amp; roles</span>
+    </a>
+  {% endif %}
+</div>
+
+<section class="admin-section">
+  <h2>Recent posts</h2>
+  {% if recent_posts %}
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Status</th>
+          <th scope="col">Author</th>
+          <th scope="col">Updated</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in recent_posts %}
+          <tr>
+            <td data-label="Title">{{ post.title }}</td>
+            <td data-label="Status">
+              {% if post.status.value == "draft" %}
+                <span class="status-badge draft">Draft</span>
+              {% else %}
+                <span class="status-badge published">Published</span>
+              {% endif %}
+            </td>
+            <td data-label="Author">{{ post.author.username }}</td>
+            <td data-label="Updated">{{ post.updated_at.strftime("%b %d, %Y") }}</td>
+            <td data-label="Actions" class="row-actions">
+              <a href="/posts/{{ post.id }}">View</a>
+              {% if flags.can_update_any or (post.author_id == principal.user_id and "posts.update_own" in principal.capabilities) %}
+                <a href="/admin/posts/{{ post.id }}/edit">Edit</a>
+              {% endif %}
+              {% if flags.can_delete %}
+                <form method="post" action="/admin/posts/{{ post.id }}/delete" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <button type="submit" class="link-button danger">Delete</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No posts are visible to you yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

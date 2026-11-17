@@ -63,9 +63,15 @@ def admin_headers() -> dict[str, str]:
 
 
 def login(client, username="admin", password="admin123", next_url="/"):
+    client.get("/login")
     return client.post(
         "/login",
-        data={"username": username, "password": password, "next": next_url},
+        data={
+            "username": username,
+            "password": password,
+            "next": next_url,
+            "csrf_token": client.cookies["csrf_token"],
+        },
         follow_redirects=False,
     )
 
@@ -149,12 +155,54 @@ def test_logout_clears_cookie_and_restores_anonymous_view(client):
     login(client)
     assert client.get("/posts/2").status_code == 200
 
-    response = client.post("/logout", follow_redirects=False)
+    response = client.post(
+        "/logout",
+        data={"csrf_token": client.cookies["csrf_token"]},
+        follow_redirects=False,
+    )
 
     assert response.status_code == 303
     assert response.headers["location"] == "/"
     assert client.cookies.get("access_token") is None
     assert client.get("/posts/2").status_code == 404
+
+
+def test_login_rejects_missing_csrf_token(client):
+    response = client.post(
+        "/login",
+        data={"username": "admin", "password": "admin123"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert "session expired" in response.text
+    assert "access_token=" not in response.headers.get("set-cookie", "")
+
+
+def test_logout_without_csrf_token_keeps_session(client):
+    login(client)
+
+    response = client.post("/logout", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert client.cookies.get("access_token") is not None
+
+
+def test_csrf_cookie_is_httponly_and_samesite_lax(client):
+    response = client.get("/")
+
+    cookie_header = response.headers["set-cookie"]
+    assert "csrf_token=" in cookie_header
+    assert "HttpOnly" in cookie_header
+    assert "SameSite=lax" in cookie_header
+
+
+def test_secure_cookie_flag_when_configured(client, monkeypatch):
+    monkeypatch.setattr(settings, "SESSION_COOKIE_SECURE", True)
+
+    response = login(client)
+
+    assert "Secure" in response.headers["set-cookie"]
 
 
 def test_invalid_cookie_is_treated_as_anonymous(client):
